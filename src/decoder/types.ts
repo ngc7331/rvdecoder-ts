@@ -6,7 +6,7 @@ export enum DecodeFieldType {
 export interface DecodeField {
   width: number
   name?: string
-  value?: string[] | object
+  value?: string[] | Map<BigInt, string>
   type?: DecodeFieldType
 }
 

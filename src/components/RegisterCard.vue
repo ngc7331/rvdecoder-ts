@@ -74,7 +74,11 @@ const binGroups = computed(() => {
     // Get corresponding alias
     let alias = null
     if (field.value) {
-      alias = field.value[decimalValue] || 'Reserved'
+      if (Array.isArray(field.value)) {
+        alias = field.value[decimalValue]
+      } else {
+        alias = field.value.get(BigInt('0b' + binaryString)) || 'Reserved'
+      }
     }
 
     // Determine display name: if name is undefined, use type as name
@@ -83,7 +87,7 @@ const binGroups = computed(() => {
       [DecodeFieldType.CSR_RO0]: 'RO0',
     }
 
-    const displayName = field.name ? field.name : decodeFieldTypeDisplayName[field.type] || 'Unknown'
+    const displayName = field.name ? field.name : field.type ? decodeFieldTypeDisplayName[field.type] : 'Unknown'
 
     // Determine style type
     let styleType = 'normal'
