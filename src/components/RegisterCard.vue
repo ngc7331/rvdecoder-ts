@@ -87,7 +87,7 @@ const binGroups = computed(() => {
       [DecodeFieldType.CSR_RO0]: 'RO0',
     }
 
-    const displayName = field.name ? field.name : field.type ? decodeFieldTypeDisplayName[field.type] : 'Unknown'
+    const displayName = field.name ? field.name : field.type !== undefined ? decodeFieldTypeDisplayName[field.type] : 'Unknown'
 
     // Determine style type
     let styleType = 'normal'
