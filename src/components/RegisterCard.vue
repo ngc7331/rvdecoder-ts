@@ -322,11 +322,16 @@ const extraInfo = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: flex-start;
+  max-width: 100%;
 }
 .bin-group {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 40px;
+  flex-shrink: 0;
+  max-width: 100%;
 }
 .bin-bits {
   border-radius: 4px;
@@ -334,6 +339,9 @@ const extraInfo = computed(() => {
   font-family: monospace;
   font-size: 1rem;
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  justify-content: center;
 }
 .bin-bits.grey {
   background: #f0f0f0;
@@ -366,6 +374,11 @@ const extraInfo = computed(() => {
 .bin-name {
   font-size: 0.75rem;
   margin-top: 2px;
+  word-wrap: break-word;
+  word-break: break-all;
+  text-align: center;
+  max-width: 100px;
+  line-height: 1.2;
 }
 .bin-name:hover {
   opacity: 0.8;
@@ -390,6 +403,10 @@ const extraInfo = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  word-wrap: break-word;
+  word-break: break-all;
+  max-width: 100px;
+  line-height: 1.2;
 }
 .bin-alias.grey {
   background: #f0f0f0;
