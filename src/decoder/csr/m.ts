@@ -1,7 +1,7 @@
-import { DecodeFieldType } from './types'
-import type { DecodeMode } from './types'
+import { DecodeFieldType } from '../types'
+import type { DecodeMode } from '../types'
 
-export const csrDecoders: DecodeMode[] = [
+export const mMode: DecodeMode[] = [
   // 0x300 - mstatus
   {
     name: 'mstatus',
