@@ -10,18 +10,22 @@ interface Props extends DecodeMode {
 
 const props = defineProps<Props>()
 
-// Helper function to calculate field width
-const getFieldWidth = (field: DecodeField) => {
-  return field.high !== undefined ? field.high - field.low + 1 : 1
+// Interface for bit range information
+interface BitRange {
+  start: number
+  end: number
+  width: number
+  name: string
 }
 
-// Helper function to get field bit range
-const getFieldBitRange = (field: DecodeField) => {
-  return {
-    start: field.low,
-    end: field.high !== undefined ? field.high : field.low,
-    width: field.high !== undefined ? field.high - field.low + 1 : 1
-  }
+// Helper function to get bit range from DecodeField
+const getBitRangeFromField = (field: DecodeField, index?: number): BitRange => {
+  const start = field.low
+  const end = field.high !== undefined ? field.high : field.low
+  const width = end - start + 1
+  const name = field.name || (field.type !== undefined ? `Type[${field.type}]` : `Field[${index ?? 0}]`)
+
+  return { start, end, width, name }
 }
 
 // Helper function to check if a field is DecodeField
@@ -33,7 +37,7 @@ const isDecodeField = (field: any): field is DecodeField => {
 const getFieldValueByName = (fieldName: string, fields: (DecodeField | ConditionalDecodeMode)[]): BigInt | null => {
   for (const field of fields) {
     if (isDecodeField(field) && field.name === fieldName) {
-      const bitRange = getFieldBitRange(field)
+      const bitRange = getBitRangeFromField(field)
       let value = BigInt(0)
       for (let i = bitRange.start; i <= bitRange.end; i++) {
         if (binArray.value[63 - i]) {
@@ -82,7 +86,7 @@ const validateFields = () => {
 
     // Validate value array length
     if (field.value && Array.isArray(field.value)) {
-      const fieldWidth = getFieldWidth(field)
+      const fieldWidth = getBitRangeFromField(field).width
       const expectedLength = Math.pow(2, fieldWidth)
       if (field.value.length !== expectedLength) {
         console.error(
@@ -92,10 +96,44 @@ const validateFields = () => {
     }
   })
 
-  // Validate total bits
-  const totalBits = effectiveFields.reduce((sum, field) => sum + getFieldWidth(field), 0)
-  if (totalBits !== 64) {
-    console.error(`Total bits in ${props.name} must be 64, but got ${totalBits}`)
+  // Check for overlapping bit ranges
+  const bitRanges = effectiveFields.map((field, index) => getBitRangeFromField(field, index))
+
+  // Sort by start position for easier overlap detection
+  bitRanges.sort((a, b) => a.start - b.start)
+
+  for (let i = 0; i < bitRanges.length - 1; i++) {
+    const current = bitRanges[i]
+    const next = bitRanges[i + 1]
+
+    if (current.end >= next.start) {
+      console.error(
+        `Bit range overlap in ${props.name}: ${current.name} [${current.start}:${current.end}] overlaps with ${next.name} [${next.start}:${next.end}]`
+      )
+    }
+  }
+
+  // Check for gaps and validate total bits
+  let coveredBits = 0
+  let lastEnd = -1
+
+  for (const range of bitRanges) {
+    if (lastEnd >= 0 && range.start > lastEnd + 1) {
+      const gapStart = lastEnd + 1
+      const gapEnd = range.start - 1
+      console.warn(`Bit gap in ${props.name}: bits [${gapStart}:${gapEnd}] are not covered`)
+    }
+    coveredBits += range.width
+    lastEnd = range.end
+  }
+
+  // Check if all 64 bits are covered
+  if (lastEnd < 63) {
+    console.warn(`Bit gap in ${props.name}: bits [${lastEnd + 1}:63] are not covered`)
+  }
+
+  if (coveredBits !== 64) {
+    console.error(`Total bits in ${props.name} must be 64, but got ${coveredBits}`)
   }
 }
 
@@ -139,7 +177,7 @@ const binGroups = computed(() => {
   const groups = []
 
   for (const field of effectiveFields) {
-    const bitRange = getFieldBitRange(field)
+    const bitRange = getBitRangeFromField(field)
     // Extract bits from the binary array (bit 0 is rightmost, bit 63 is leftmost)
     const groupBits = []
     for (let i = bitRange.start; i <= bitRange.end; i++) {
