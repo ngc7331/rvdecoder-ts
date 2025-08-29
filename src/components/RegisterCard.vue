@@ -92,7 +92,7 @@ const getEffectiveFields = (fields: (DecodeField | ConditionalDecodeMode)[]): De
       result.push(field)
     } else {
       // This is a ConditionalDecodeMode
-      if (checkCondition(field.condition, props.fields)) {
+      if (checkCondition(field.condition, fields)) {
         result.push(...getEffectiveFields(field.fields))
       }
     }
