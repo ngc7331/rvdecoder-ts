@@ -1,7 +1,9 @@
-import { DecodeFieldType } from '../../types'
 import type { DecodeField, ConditionalDecodeMode } from '../../types'
+import { rd, rs1, immI, funct3 } from './common'
 
 export const loadFields: (DecodeField | ConditionalDecodeMode)[] = [
-  { low: 7, high: 31, name: 'TODO' },
-  { low: 32, high: 63, type: DecodeFieldType.INVALID },
+  rd,
+  rs1,
+  ...immI,
+  funct3(['LB', 'LH', 'LW', 'LD', 'LBU', 'LHU', 'LWU', 'Reserved']),
 ]

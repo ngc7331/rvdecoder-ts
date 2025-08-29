@@ -233,7 +233,7 @@ const binGroups = computed(() => {
     let styleType
     if (field.type === DecodeFieldType.INVALID || field.type === DecodeFieldType.CSR_WPRI) {
       styleType = 'grey'
-    } else if (field.type === DecodeFieldType.CSR_RO0) {
+    } else if (field.type === DecodeFieldType.RESERVED || field.type === DecodeFieldType.CSR_RO0) {
       // Check value is 0
       styleType = decimalValue === 0 ? 'grey' : 'red'
     } else {

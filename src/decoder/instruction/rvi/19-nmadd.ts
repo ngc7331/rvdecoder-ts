@@ -1,7 +1,11 @@
-import { DecodeFieldType } from '../../types'
 import type { DecodeField, ConditionalDecodeMode } from '../../types'
+import { frd, frm, frs1, frs2, frs3, fdestPrecision } from './common'
 
 export const nmaddFields: (DecodeField | ConditionalDecodeMode)[] = [
-  { low: 7, high: 31, name: 'TODO' },
-  { low: 32, high: 63, type: DecodeFieldType.INVALID },
+  frd,
+  frm,
+  frs1,
+  frs2,
+  frs3,
+  fdestPrecision,
 ]

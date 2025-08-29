@@ -1,4 +1,6 @@
+import { DecodeFieldType } from '../../types'
 import type { DecodeField, ConditionalDecodeMode } from '../../types'
+
 import { loadFields } from './00-load'
 import { loadFpFields } from './01-load-fp'
 import { custom0Fields } from './02-custom-0'
@@ -328,4 +330,5 @@ export const rviFields: (DecodeField | ConditionalDecodeMode)[] = [
     },
     fields: reserved31Fields,
   },
+  { low: 32, high: 63, type: DecodeFieldType.INVALID },
 ]

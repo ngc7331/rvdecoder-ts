@@ -1,7 +1,9 @@
-import { DecodeFieldType } from '../../types'
 import type { DecodeField, ConditionalDecodeMode } from '../../types'
+import { rs1, rs2, immB, funct3 } from './common'
 
 export const branchFields: (DecodeField | ConditionalDecodeMode)[] = [
-  { low: 7, high: 31, name: 'TODO' },
-  { low: 32, high: 63, type: DecodeFieldType.INVALID },
+  rs1,
+  rs2,
+  ...immB,
+  funct3(['BEQ', 'BNE', 'BLT', 'BGE', 'BLTU', 'BGEU', 'Reserved', 'Reserved']),
 ]
