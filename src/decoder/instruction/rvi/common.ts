@@ -54,8 +54,33 @@ export const rs1Rsvd: DecodeField = {
   high: 19,
 }
 
-const renderImm = (value: bigint) => {
-  return `0x${value.toString(16)} (${value.toString()})`
+const renderImm = (value: bigint, bits: number) => {
+  // 原始16进制
+  const originalHex = `0x${value.toString(16)}`
+
+  // 有符号扩展到64位
+  const signBit = (value >> BigInt(bits - 1)) & 1n
+  let extendedValue: bigint
+
+  if (signBit === 1n) {
+    // 负数：高位填充1
+    const mask = (1n << BigInt(64 - bits)) - 1n
+    extendedValue = value | (mask << BigInt(bits))
+  } else {
+    // 正数：保持原值（高位已经是0）
+    extendedValue = value
+  }
+
+  // 扩展后16进制
+  const extendedHex = `0x${extendedValue.toString(16).padStart(16, '0')}`
+
+  // 扩展后十进制（有符号）
+  // 将64位无符号数转换为有符号数
+  const signedDecimal = extendedValue >= (1n << 63n)
+    ? extendedValue - (1n << 64n)
+    : extendedValue
+
+  return `${originalHex} → ${extendedHex} (${signedDecimal})`
 }
 
 export const immI: DecodeField[] = [
@@ -65,7 +90,7 @@ export const immI: DecodeField[] = [
     high: 31,
     extra: (value) => {
       const imm = (value >> 20n) & 0xfffn
-      return `Immediate(I-type) = ${renderImm(imm)}`
+      return `Immediate(I-type) = ${renderImm(imm, 12)}`
     },
   },
 ]
@@ -79,7 +104,7 @@ export const immS: DecodeField[] = [
       const imm4_0 = (value >> 7n) & 0x1fn
       const imm11_5 = (value >> 25n) & 0x7fn
       const imm = (imm11_5 << 5n) | imm4_0
-      return `Immediate(S-type) = ${renderImm(imm)}`
+      return `Immediate(S-type) = ${renderImm(imm, 12)}`
     },
   },
   { name: 'immS[11:5]', low: 25, high: 31 },
@@ -95,7 +120,7 @@ export const immB: DecodeField[] = [
       const imm10_5 = (value >> 25n) & 0x3fn
       const imm12 = (value >> 31n) & 0x1n
       const imm = (imm12 << 12n) | (imm11 << 11n) | (imm10_5 << 5n) | (imm4_1 << 1n)
-      return `Immediate(B-type) = ${renderImm(imm)}`
+      return `Immediate(B-type) = ${renderImm(imm, 13)}`
     },
   },
   { name: 'immB[4:1]', low: 8, high: 11 },
@@ -110,7 +135,7 @@ export const immU: DecodeField[] = [
     high: 31,
     extra: (value) => {
       const imm = value & 0xfffff000n
-      return `Immediate(U-type) = ${renderImm(imm)}`
+      return `Immediate(U-type) = ${renderImm(imm, 32)}`
     },
   },
 ]
@@ -126,7 +151,7 @@ export const immJ: DecodeField[] = [
       const imm10_1 = (value >> 21n) & 0x3ffn
       const imm20 = (value >> 31n) & 0x1n
       const imm = (imm20 << 20n) | (imm19_12 << 12n) | (imm11 << 11n) | (imm10_1 << 1n)
-      return `Immediate(J-type) = ${renderImm(imm)}`
+      return `Immediate(J-type) = ${renderImm(imm, 20)}`
     },
   },
   { name: 'immJ[11]', low: 20 },
