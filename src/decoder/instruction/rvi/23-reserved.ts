@@ -1,4 +1,3 @@
-import { DecodeFieldType } from '../../types'
 import type { DecodeField, ConditionalDecodeMode } from '../../types'
 
 export const reserved23Fields: (DecodeField | ConditionalDecodeMode)[] = [

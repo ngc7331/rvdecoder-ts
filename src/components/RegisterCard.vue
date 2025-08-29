@@ -50,8 +50,8 @@ const getBitRangeFromField = (field: DecodeField, index?: number): BitRange => {
 }
 
 // Helper function to check if a field is DecodeField
-const isDecodeField = (field: any): field is DecodeField => {
-  return typeof field.low === 'number'
+const isDecodeField = (field: DecodeField | ConditionalDecodeMode): field is DecodeField => {
+  return typeof (field as DecodeField).low === 'number'
 }
 
 // Helper function to get field value by name
@@ -187,7 +187,7 @@ const binArray = computed(() => {
 // Validate when binArray is ready
 watchEffect(() => {
   // This ensures binArray is computed before validation
-  binArray.value
+  void binArray.value
   validateFields()
 })
 
