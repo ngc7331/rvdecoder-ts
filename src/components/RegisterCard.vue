@@ -76,11 +76,15 @@ const getFieldValueByName = (
 
 // Helper function to check condition
 const checkCondition = (
-  condition: { field: string; value: bigint },
+  condition: { field: string; value: bigint | bigint[] },
   fields: (DecodeField | ConditionalDecodeMode)[],
 ): boolean => {
   const fieldValue = getFieldValueByName(condition.field, fields)
-  return fieldValue !== null && fieldValue === condition.value
+  if (fieldValue === null) return false
+  if (Array.isArray(condition.value)) {
+    return condition.value.some((v) => fieldValue === v)
+  }
+  return fieldValue === condition.value
 }
 
 // Helper function to get all effective fields (recursively resolve conditional modes)

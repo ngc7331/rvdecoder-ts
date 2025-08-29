@@ -27,7 +27,7 @@ export interface DecodeField {
 
 export interface DecodeCondition {
   field: string
-  value: bigint
+  value: bigint | bigint[]
 }
 
 export interface ConditionalDecodeMode {
