@@ -278,7 +278,7 @@ const binGroups = computed(() => {
             {{ bit }}
           </span>
         </div>
-        <div v-if="group.alias" class="bin-alias">{{ group.alias }}</div>
+        <div v-if="group.alias" class="bin-alias" :class="group.styleType">{{ group.alias }}</div>
         <div v-else class="bin-alias-placeholder"></div>
       </div>
     </div>
@@ -310,7 +310,6 @@ const binGroups = computed(() => {
   align-items: center;
 }
 .bin-bits {
-  background: #e1eaff;
   border-radius: 4px;
   padding: 4px 8px;
   font-family: monospace;
@@ -363,16 +362,26 @@ const binGroups = computed(() => {
 }
 .bin-alias {
   font-size: 0.7rem;
-  color: #2c3e50;
   font-weight: bold;
   margin-top: 2px;
   padding: 2px 4px;
-  background: #e8f4fd;
   border-radius: 3px;
   text-align: center;
   min-height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.bin-alias.grey {
+  background: #f0f0f0;
+  color: #888;
+}
+.bin-alias.normal {
+  background: #e8f4fd;
+  color: #2c3e50;
+}
+.bin-alias.red {
+  background: #ffe6e6;
+  color: #d32f2f;
 }
 </style>
