@@ -252,14 +252,26 @@ const binGroups = computed(() => {
 // Collect extra information from all fields with extra functions
 const extraInfo = computed(() => {
   const effectiveFields = getEffectiveFields(props.fields)
-  const extraStrings: string[] = []
+  const infoList: string[] = []
+  const warningList: string[] = []
+  const errorList: string[] = []
 
   for (const field of effectiveFields) {
-    if (field.extra && typeof field.extra === 'function') {
+    if (field.extra) {
       try {
-        const extraString = field.extra(fullValue.value)
-        if (extraString && extraString.trim()) {
-          extraStrings.push(extraString)
+        const extraResults = field.extra(fullValue.value)
+        for (const extraResult of extraResults) {
+          switch (extraResult.level) {
+            case 'info':
+              infoList.push(extraResult.msg)
+              break
+            case 'warning':
+              warningList.push(extraResult.msg)
+              break
+            case 'error':
+              errorList.push(extraResult.msg)
+              break
+          }
         }
       } catch (error) {
         console.error(`Error calling extra function for field ${field.name}:`, error)
@@ -267,7 +279,11 @@ const extraInfo = computed(() => {
     }
   }
 
-  return extraStrings
+  return {
+    info: infoList,
+    warning: warningList,
+    error: errorList,
+  }
 })
 </script>
 
@@ -296,9 +312,26 @@ const extraInfo = computed(() => {
         <div v-else class="bin-alias-placeholder"></div>
       </div>
     </div>
-    <div v-if="extraInfo.length > 0" class="extra-info">
-      <div v-for="(info, index) in extraInfo" :key="index" class="extra-line">
-        {{ info }}
+    <div v-if="extraInfo.error.length > 0" class="extra-info error">
+      <div class="extra-section-title">Error</div>
+      <div v-for="(msg, index) in extraInfo.error" :key="`error-${index}`" class="extra-line error">
+        {{ msg }}
+      </div>
+    </div>
+    <div v-if="extraInfo.warning.length > 0" class="extra-info warning">
+      <div class="extra-section-title">Warning</div>
+      <div
+        v-for="(msg, index) in extraInfo.warning"
+        :key="`warning-${index}`"
+        class="extra-line warning"
+      >
+        {{ msg }}
+      </div>
+    </div>
+    <div v-if="extraInfo.info.length > 0" class="extra-info info">
+      <div class="extra-section-title">Info</div>
+      <div v-for="(msg, index) in extraInfo.info" :key="`info-${index}`" class="extra-line info">
+        {{ msg }}
       </div>
     </div>
   </div>
@@ -423,18 +456,52 @@ const extraInfo = computed(() => {
 .extra-info {
   margin-top: 16px;
   padding: 12px;
-  background: #f8f9fa;
   border-radius: 6px;
+}
+.extra-info.error {
+  background: #ffeaea;
+  border-left: 4px solid #dc3545;
+}
+.extra-info.warning {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+}
+.extra-info.info {
+  background: #f8f9fa;
   border-left: 4px solid #007bff;
+}
+.extra-section-title {
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.extra-info.error .extra-section-title {
+  color: #dc3545;
+}
+.extra-info.warning .extra-section-title {
+  color: #856404;
+}
+.extra-info.info .extra-section-title {
+  color: #007bff;
 }
 .extra-line {
   font-family: monospace;
   font-size: 0.85rem;
-  color: #495057;
   line-height: 1.4;
   margin-bottom: 4px;
 }
 .extra-line:last-child {
   margin-bottom: 0;
+}
+.extra-line.error {
+  color: #721c24;
+}
+.extra-line.warning {
+  color: #856404;
+}
+.extra-line.info {
+  color: #495057;
 }
 </style>

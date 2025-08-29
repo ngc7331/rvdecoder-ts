@@ -1,40 +1,7 @@
 import { DecodeFieldType } from '../../types'
 import type { DecodeField } from '../../types'
-
-export const registerNames = [
-  'zero',
-  'ra',
-  'sp',
-  'gp',
-  'tp',
-  't0',
-  't1',
-  't2',
-  's0/fp',
-  's1',
-  'a0',
-  'a1',
-  'a2',
-  'a3',
-  'a4',
-  'a5',
-  'a6',
-  'a7',
-  's2',
-  's3',
-  's4',
-  's5',
-  's6',
-  's7',
-  's8',
-  's9',
-  's10',
-  's11',
-  't3',
-  't4',
-  't5',
-  't6',
-]
+import { renderImm } from '../../utils/renderImm'
+import { registerNames, fRegisterNames } from '../common'
 
 export const rd: DecodeField = { name: 'rd', low: 7, high: 11, value: registerNames }
 
@@ -54,35 +21,6 @@ export const rs1Rsvd: DecodeField = {
   high: 19,
 }
 
-const renderImm = (value: bigint, bits: number) => {
-  // 原始16进制
-  const originalHex = `0x${value.toString(16)}`
-
-  // 有符号扩展到64位
-  const signBit = (value >> BigInt(bits - 1)) & 1n
-  let extendedValue: bigint
-
-  if (signBit === 1n) {
-    // 负数：高位填充1
-    const mask = (1n << BigInt(64 - bits)) - 1n
-    extendedValue = value | (mask << BigInt(bits))
-  } else {
-    // 正数：保持原值（高位已经是0）
-    extendedValue = value
-  }
-
-  // 扩展后16进制
-  const extendedHex = `0x${extendedValue.toString(16).padStart(16, '0')}`
-
-  // 扩展后十进制（有符号）
-  // 将64位无符号数转换为有符号数
-  const signedDecimal = extendedValue >= (1n << 63n)
-    ? extendedValue - (1n << 64n)
-    : extendedValue
-
-  return `${originalHex} → ${extendedHex} (${signedDecimal})`
-}
-
 export const immI: DecodeField[] = [
   {
     name: 'immI[11:0]',
@@ -90,7 +28,7 @@ export const immI: DecodeField[] = [
     high: 31,
     extra: (value) => {
       const imm = (value >> 20n) & 0xfffn
-      return `Immediate(I-type) = ${renderImm(imm, 12)}`
+      return [{ msg: `Immediate(I-type) = ${renderImm(imm, 12)}`, level: 'info' }]
     },
   },
 ]
@@ -104,7 +42,7 @@ export const immS: DecodeField[] = [
       const imm4_0 = (value >> 7n) & 0x1fn
       const imm11_5 = (value >> 25n) & 0x7fn
       const imm = (imm11_5 << 5n) | imm4_0
-      return `Immediate(S-type) = ${renderImm(imm, 12)}`
+      return [{ msg: `Immediate(S-type) = ${renderImm(imm, 12)}`, level: 'info' }]
     },
   },
   { name: 'immS[11:5]', low: 25, high: 31 },
@@ -120,7 +58,7 @@ export const immB: DecodeField[] = [
       const imm10_5 = (value >> 25n) & 0x3fn
       const imm12 = (value >> 31n) & 0x1n
       const imm = (imm12 << 12n) | (imm11 << 11n) | (imm10_5 << 5n) | (imm4_1 << 1n)
-      return `Immediate(B-type) = ${renderImm(imm, 13)}`
+      return [{ msg: `Immediate(B-type) = ${renderImm(imm, 13)}`, level: 'info' }]
     },
   },
   { name: 'immB[4:1]', low: 8, high: 11 },
@@ -135,7 +73,7 @@ export const immU: DecodeField[] = [
     high: 31,
     extra: (value) => {
       const imm = value & 0xfffff000n
-      return `Immediate(U-type) = ${renderImm(imm, 32)}`
+      return [{ msg: `Immediate(U-type) = ${renderImm(imm, 32)}`, level: 'info' }]
     },
   },
 ]
@@ -151,7 +89,7 @@ export const immJ: DecodeField[] = [
       const imm10_1 = (value >> 21n) & 0x3ffn
       const imm20 = (value >> 31n) & 0x1n
       const imm = (imm20 << 20n) | (imm19_12 << 12n) | (imm11 << 11n) | (imm10_1 << 1n)
-      return `Immediate(J-type) = ${renderImm(imm, 20)}`
+      return [{ msg: `Immediate(J-type) = ${renderImm(imm, 20)}`, level: 'info' }]
     },
   },
   { name: 'immJ[11]', low: 20 },
@@ -163,7 +101,10 @@ export const uimm: DecodeField = {
   name: 'uimm',
   low: 15,
   high: 19,
-  value: [...Array(16).keys()].map((x) => x.toString(16)),
+  extra: (value) => {
+    const uimm = (value >> 15n) & 0x1fn
+    return [{ msg: `Immediate = ${renderImm(uimm, 5, false)}`, level: 'info' }]
+  },
 }
 
 export const funct3: (value?: string[] | Map<bigint, string>) => DecodeField = (value) => ({
@@ -202,41 +143,6 @@ export const shamt6: DecodeField = {
 }
 
 // floating point
-export const fRegisterNames = [
-  'ft0',
-  'ft1',
-  'ft2',
-  'ft3',
-  'ft4',
-  'ft5',
-  'ft6',
-  'ft7',
-  'fs0',
-  'fs1',
-  'fa0',
-  'fa1',
-  'fa2',
-  'fa3',
-  'fa4',
-  'fa5',
-  'fa6',
-  'fa7',
-  'fs2',
-  'fs3',
-  'fs4',
-  'fs5',
-  'fs6',
-  'fs7',
-  'fs8',
-  'fs9',
-  'fs10',
-  'fs11',
-  'ft8',
-  'ft9',
-  'ft10',
-  'ft11',
-]
-
 export const frd: DecodeField = { name: 'rd', low: 7, high: 11, value: fRegisterNames }
 
 export const frs1: DecodeField = { name: 'rs1', low: 15, high: 19, value: fRegisterNames }

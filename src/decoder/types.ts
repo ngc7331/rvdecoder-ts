@@ -19,6 +19,11 @@ export const decodeFieldTypeDescription: Record<DecodeFieldType, string> = {
   [DecodeFieldType.CSR_RO0]: 'Read-only 0',
 }
 
+export interface DecodeExtraInfo {
+  msg: string
+  level: 'info' | 'warning' | 'error'
+}
+
 export interface DecodeField {
   low: number
   high?: number
@@ -26,7 +31,7 @@ export interface DecodeField {
   description?: string
   value?: string[] | Map<bigint, string>
   type?: DecodeFieldType
-  extra?: (value: bigint) => string
+  extra?: (value: bigint) => DecodeExtraInfo[]
 }
 
 export interface DecodeCondition {
