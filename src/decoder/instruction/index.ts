@@ -1,6 +1,6 @@
-import { DecodeFieldType } from '../types'
 import type { DecodeMode } from '../types'
 
+import { rvc0Fields, rvc1Fields, rvc2Fields } from './rvc'
 import { rviFields } from './rvi'
 
 export const instructionDecoders: DecodeMode[] = [
@@ -14,10 +14,7 @@ export const instructionDecoders: DecodeMode[] = [
           field: 'opcode[1:0]',
           value: BigInt(0),
         },
-        fields: [
-          { low: 2, high: 15, name: 'TODO' },
-          { low: 16, high: 63, type: DecodeFieldType.INVALID },
-        ],
+        fields: rvc0Fields,
       },
       {
         name: 'C1',
@@ -25,10 +22,7 @@ export const instructionDecoders: DecodeMode[] = [
           field: 'opcode[1:0]',
           value: BigInt(1),
         },
-        fields: [
-          { low: 2, high: 15, name: 'TODO' },
-          { low: 16, high: 63, type: DecodeFieldType.INVALID },
-        ],
+        fields: rvc1Fields,
       },
       {
         name: 'C2',
@@ -36,10 +30,7 @@ export const instructionDecoders: DecodeMode[] = [
           field: 'opcode[1:0]',
           value: BigInt(2),
         },
-        fields: [
-          { low: 2, high: 15, name: 'TODO' },
-          { low: 16, high: 63, type: DecodeFieldType.INVALID },
-        ],
+        fields: rvc2Fields,
       },
       {
         name: 'I',
