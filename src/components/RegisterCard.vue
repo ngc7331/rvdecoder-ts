@@ -2,7 +2,7 @@
 import { computed, watchEffect } from 'vue'
 
 import type { DecodeMode, DecodeField, ConditionalDecodeMode } from '@/decoder/types'
-import { DecodeFieldType } from '@/decoder/types'
+import { DecodeFieldType, decodeFieldTypeDisplayName, decodeFieldTypeDescription } from '@/decoder/types'
 
 interface Props extends DecodeMode {
   hexValue: string
@@ -16,6 +16,17 @@ interface BitRange {
   end: number
   width: number
   name: string
+  description: string
+}
+
+// Helper function to get field display name
+const getFieldDisplayName = (field: DecodeField, index?: number): string => {
+  return field.name || (field.type !== undefined ? decodeFieldTypeDisplayName[field.type] : `Field[${index ?? 0}]`)
+}
+
+// Helper function to get field description
+const getFieldDescription = (field: DecodeField): string => {
+  return field.description || (field.type !== undefined ? decodeFieldTypeDescription[field.type] : '')
 }
 
 // Helper function to get bit range from DecodeField
@@ -23,9 +34,10 @@ const getBitRangeFromField = (field: DecodeField, index?: number): BitRange => {
   const start = field.low
   const end = field.high !== undefined ? field.high : field.low
   const width = end - start + 1
-  const name = field.name || (field.type !== undefined ? `Type[${field.type}]` : `Field[${index ?? 0}]`)
+  const name = getFieldDisplayName(field, index)
+  const description = getFieldDescription(field)
 
-  return { start, end, width, name }
+  return { start, end, width, name, description }
 }
 
 // Helper function to check if a field is DecodeField
@@ -198,14 +210,6 @@ const binGroups = computed(() => {
       }
     }
 
-    // Determine display name: if name is undefined, use type as name
-    const decodeFieldTypeDisplayName: Record<DecodeFieldType, string> = {
-      [DecodeFieldType.CSR_WPRI]: 'WPRI',
-      [DecodeFieldType.CSR_RO0]: 'RO0',
-    }
-
-    const displayName = field.name ? field.name : field.type !== undefined ? decodeFieldTypeDisplayName[field.type] : 'Unknown'
-
     // Determine style type
     let styleType = 'normal'
     if (field.type === DecodeFieldType.CSR_WPRI) {
@@ -217,7 +221,8 @@ const binGroups = computed(() => {
 
     groups.push({
       bits: groupBits,
-      name: displayName,
+      name: bitRange.name,
+      description: bitRange.description,
       startIndex: bitRange.start,
       value: decimalValue,
       alias: alias,
@@ -235,7 +240,13 @@ const binGroups = computed(() => {
     <div class="card-title">{{ name }}</div>
     <div class="bin-output">
       <div v-for="(group, groupIdx) in binGroups" :key="groupIdx" class="bin-group">
-        <span class="bin-name" :class="group.styleType">{{ group.name }}</span>
+        <span
+          class="bin-name"
+          :class="group.styleType"
+          :title="group.description"
+        >
+          {{ group.name }}
+        </span>
         <div class="bin-bits" :class="group.styleType">
           <span
             v-for="(bit, bitIdx) in group.bits"
@@ -309,6 +320,9 @@ const binGroups = computed(() => {
 .bin-name {
   font-size: 0.75rem;
   margin-top: 2px;
+}
+.bin-name:hover {
+  opacity: 0.8;
 }
 .bin-name.grey {
   color: #888;
