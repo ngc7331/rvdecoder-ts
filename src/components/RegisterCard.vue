@@ -2,7 +2,11 @@
 import { computed, watchEffect } from 'vue'
 
 import type { DecodeMode, DecodeField, ConditionalDecodeMode } from '@/decoder/types'
-import { DecodeFieldType, decodeFieldTypeDisplayName, decodeFieldTypeDescription } from '@/decoder/types'
+import {
+  DecodeFieldType,
+  decodeFieldTypeDisplayName,
+  decodeFieldTypeDescription,
+} from '@/decoder/types'
 
 interface Props extends DecodeMode {
   hexValue: string
@@ -21,12 +25,17 @@ interface BitRange {
 
 // Helper function to get field display name
 const getFieldDisplayName = (field: DecodeField, index?: number): string => {
-  return field.name || (field.type !== undefined ? decodeFieldTypeDisplayName[field.type] : `Field[${index ?? 0}]`)
+  return (
+    field.name ||
+    (field.type !== undefined ? decodeFieldTypeDisplayName[field.type] : `Field[${index ?? 0}]`)
+  )
 }
 
 // Helper function to get field description
 const getFieldDescription = (field: DecodeField): string => {
-  return field.description || (field.type !== undefined ? decodeFieldTypeDescription[field.type] : '')
+  return (
+    field.description || (field.type !== undefined ? decodeFieldTypeDescription[field.type] : '')
+  )
 }
 
 // Helper function to get bit range from DecodeField
@@ -46,7 +55,10 @@ const isDecodeField = (field: any): field is DecodeField => {
 }
 
 // Helper function to get field value by name
-const getFieldValueByName = (fieldName: string, fields: (DecodeField | ConditionalDecodeMode)[]): BigInt | null => {
+const getFieldValueByName = (
+  fieldName: string,
+  fields: (DecodeField | ConditionalDecodeMode)[],
+): bigint | null => {
   for (const field of fields) {
     if (isDecodeField(field) && field.name === fieldName) {
       const bitRange = getBitRangeFromField(field)
@@ -63,7 +75,10 @@ const getFieldValueByName = (fieldName: string, fields: (DecodeField | Condition
 }
 
 // Helper function to check condition
-const checkCondition = (condition: { field: string; value: BigInt }, fields: (DecodeField | ConditionalDecodeMode)[]): boolean => {
+const checkCondition = (
+  condition: { field: string; value: bigint },
+  fields: (DecodeField | ConditionalDecodeMode)[],
+): boolean => {
   const fieldValue = getFieldValueByName(condition.field, fields)
   return fieldValue !== null && fieldValue === condition.value
 }
@@ -120,7 +135,7 @@ const validateFields = () => {
 
     if (current.end >= next.start) {
       console.error(
-        `Bit range overlap in ${props.name}: ${current.name} [${current.start}:${current.end}] overlaps with ${next.name} [${next.start}:${next.end}]`
+        `Bit range overlap in ${props.name}: ${current.name} [${current.start}:${current.end}] overlaps with ${next.name} [${next.start}:${next.end}]`,
       )
     }
   }
@@ -212,7 +227,7 @@ const binGroups = computed(() => {
 
     // Determine style type
     let styleType = 'normal'
-    if (field.type === DecodeFieldType.CSR_WPRI) {
+    if (field.type === DecodeFieldType.INVALID || field.type === DecodeFieldType.CSR_WPRI) {
       styleType = 'grey'
     } else if (field.type === DecodeFieldType.CSR_RO0) {
       // Check value is 0
@@ -227,6 +242,7 @@ const binGroups = computed(() => {
       value: decimalValue,
       alias: alias,
       styleType: styleType,
+      disabled: field.type === DecodeFieldType.INVALID,
     })
   }
 
@@ -240,11 +256,7 @@ const binGroups = computed(() => {
     <div class="card-title">{{ name }}</div>
     <div class="bin-output">
       <div v-for="(group, groupIdx) in binGroups" :key="groupIdx" class="bin-group">
-        <span
-          class="bin-name"
-          :class="group.styleType"
-          :title="group.description"
-        >
+        <span class="bin-name" :class="group.styleType" :title="group.description">
           {{ group.name }}
         </span>
         <div class="bin-bits" :class="group.styleType">
@@ -252,7 +264,10 @@ const binGroups = computed(() => {
             v-for="(bit, bitIdx) in group.bits"
             :key="bitIdx"
             class="bit-digit"
-            @click="toggleBit(group.startIndex + (group.bits.length - 1 - bitIdx))"
+            :class="{ disabled: group.disabled }"
+            @click="
+              !group.disabled && toggleBit(group.startIndex + (group.bits.length - 1 - bitIdx))
+            "
           >
             {{ bit }}
           </span>
@@ -314,8 +329,15 @@ const binGroups = computed(() => {
   border-radius: 2px;
   transition: background-color 0.2s;
 }
+.bit-digit.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 .bit-digit:hover {
   background-color: #c5d9ff;
+}
+.bit-digit.disabled:hover {
+  background-color: transparent;
 }
 .bin-name {
   font-size: 0.75rem;

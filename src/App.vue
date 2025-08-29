@@ -136,11 +136,7 @@ const handleToggleBit = (bitIndex: number) => {
           <h3>Decode mode</h3>
         </div>
         <div class="checkbox-list">
-          <div
-            v-for="category in decoders"
-            :key="category.name"
-            class="category-group"
-          >
+          <div v-for="category in decoders" :key="category.name" class="category-group">
             <div class="category-header">
               <h4>{{ category.name }}</h4>
             </div>
