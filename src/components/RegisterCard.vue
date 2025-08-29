@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 
-import type { DecodeMode } from '@/decoder/types'
+import type { DecodeMode, DecodeField, ConditionalDecodeMode } from '@/decoder/types'
 import { DecodeFieldType } from '@/decoder/types'
 
 interface Props extends DecodeMode {
@@ -11,12 +11,12 @@ interface Props extends DecodeMode {
 const props = defineProps<Props>()
 
 // Helper function to calculate field width
-const getFieldWidth = (field: any) => {
+const getFieldWidth = (field: DecodeField) => {
   return field.high !== undefined ? field.high - field.low + 1 : 1
 }
 
 // Helper function to get field bit range
-const getFieldBitRange = (field: any) => {
+const getFieldBitRange = (field: DecodeField) => {
   return {
     start: field.low,
     end: field.high !== undefined ? field.high : field.low,
@@ -24,9 +24,57 @@ const getFieldBitRange = (field: any) => {
   }
 }
 
+// Helper function to check if a field is DecodeField
+const isDecodeField = (field: any): field is DecodeField => {
+  return typeof field.low === 'number'
+}
+
+// Helper function to get field value by name
+const getFieldValueByName = (fieldName: string, fields: (DecodeField | ConditionalDecodeMode)[]): BigInt | null => {
+  for (const field of fields) {
+    if (isDecodeField(field) && field.name === fieldName) {
+      const bitRange = getFieldBitRange(field)
+      let value = BigInt(0)
+      for (let i = bitRange.start; i <= bitRange.end; i++) {
+        if (binArray.value[63 - i]) {
+          value |= BigInt(1) << BigInt(i - bitRange.start)
+        }
+      }
+      return value
+    }
+  }
+  return null
+}
+
+// Helper function to check condition
+const checkCondition = (condition: { field: string; value: BigInt }, fields: (DecodeField | ConditionalDecodeMode)[]): boolean => {
+  const fieldValue = getFieldValueByName(condition.field, fields)
+  return fieldValue !== null && fieldValue === condition.value
+}
+
+// Helper function to get all effective fields (recursively resolve conditional modes)
+const getEffectiveFields = (fields: (DecodeField | ConditionalDecodeMode)[]): DecodeField[] => {
+  const result: DecodeField[] = []
+
+  for (const field of fields) {
+    if (isDecodeField(field)) {
+      result.push(field)
+    } else {
+      // This is a ConditionalDecodeMode
+      if (checkCondition(field.condition, props.fields)) {
+        result.push(...getEffectiveFields(field.fields))
+      }
+    }
+  }
+
+  return result
+}
+
 // Validate value array length and field name/type
 const validateFields = () => {
-  props.fields.forEach((field, index) => {
+  const effectiveFields = getEffectiveFields(props.fields)
+
+  effectiveFields.forEach((field, index) => {
     // Check that at least one of name or type is not undefined
     if (field.name === undefined && field.type === undefined) {
       console.error(`Field[${index}] in ${props.name}: name and type cannot both be undefined`)
@@ -45,14 +93,11 @@ const validateFields = () => {
   })
 
   // Validate total bits
-  const totalBits = props.fields.reduce((sum, field) => sum + getFieldWidth(field), 0)
+  const totalBits = effectiveFields.reduce((sum, field) => sum + getFieldWidth(field), 0)
   if (totalBits !== 64) {
     console.error(`Total bits in ${props.name} must be 64, but got ${totalBits}`)
   }
 }
-
-// Validate when component loads
-validateFields()
 
 // Calculate binary array based on input hexValue
 const binArray = computed(() => {
@@ -70,6 +115,13 @@ const binArray = computed(() => {
   }
 })
 
+// Validate when binArray is ready
+watchEffect(() => {
+  // This ensures binArray is computed before validation
+  binArray.value
+  validateFields()
+})
+
 // Emit event to parent component to handle bit toggling and error checking
 const emit = defineEmits<{
   toggleBit: [bitIndex: number]
@@ -80,10 +132,13 @@ const toggleBit = (bitIndex: number) => {
 }
 
 const binGroups = computed(() => {
-  // Group based on fields - fields are ordered from low to high bit positions
+  // Get effective fields after resolving conditions
+  const effectiveFields = getEffectiveFields(props.fields)
+
+  // Group based on effective fields - fields are ordered from low to high bit positions
   const groups = []
-  
-  for (const field of props.fields) {
+
+  for (const field of effectiveFields) {
     const bitRange = getFieldBitRange(field)
     // Extract bits from the binary array (bit 0 is rightmost, bit 63 is leftmost)
     const groupBits = []

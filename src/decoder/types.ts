@@ -11,9 +11,21 @@ export interface DecodeField {
   type?: DecodeFieldType
 }
 
+export interface DecodeCondition {
+  field: string
+  value: BigInt
+}
+
+export interface ConditionalDecodeMode {
+  name: string
+  fields: (DecodeField | ConditionalDecodeMode)[]
+  condition: DecodeCondition
+}
+
 export interface DecodeMode {
   name: string
-  fields: DecodeField[]
+  fields: (DecodeField | ConditionalDecodeMode)[]
+  condition?: DecodeCondition
 }
 
 export interface DecodeCategory {
