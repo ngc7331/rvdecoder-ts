@@ -10,6 +10,20 @@ interface Props extends DecodeMode {
 
 const props = defineProps<Props>()
 
+// Helper function to calculate field width
+const getFieldWidth = (field: any) => {
+  return field.high !== undefined ? field.high - field.low + 1 : 1
+}
+
+// Helper function to get field bit range
+const getFieldBitRange = (field: any) => {
+  return {
+    start: field.low,
+    end: field.high !== undefined ? field.high : field.low,
+    width: field.high !== undefined ? field.high - field.low + 1 : 1
+  }
+}
+
 // Validate value array length and field name/type
 const validateFields = () => {
   props.fields.forEach((field, index) => {
@@ -20,14 +34,21 @@ const validateFields = () => {
 
     // Validate value array length
     if (field.value && Array.isArray(field.value)) {
-      const expectedLength = Math.pow(2, field.width)
+      const fieldWidth = getFieldWidth(field)
+      const expectedLength = Math.pow(2, fieldWidth)
       if (field.value.length !== expectedLength) {
         console.error(
-          `Field ${field.name || field.type} in ${props.name}: value array length is ${field.value.length}, but expected ${expectedLength} (2^${field.width})`,
+          `Field ${field.name || field.type} in ${props.name}: value array length is ${field.value.length}, but expected ${expectedLength} (2^${fieldWidth})`,
         )
       }
     }
   })
+
+  // Validate total bits
+  const totalBits = props.fields.reduce((sum, field) => sum + getFieldWidth(field), 0)
+  if (totalBits !== 64) {
+    console.error(`Total bits in ${props.name} must be 64, but got ${totalBits}`)
+  }
 }
 
 // Validate when component loads
@@ -59,13 +80,16 @@ const toggleBit = (bitIndex: number) => {
 }
 
 const binGroups = computed(() => {
-  // Group based on fields
+  // Group based on fields - fields are ordered from low to high bit positions
   const groups = []
-  let position = props.fields.reduce((sum, fmt) => sum + fmt.width, 0)
-
+  
   for (const field of props.fields) {
-    position -= field.width
-    const groupBits = binArray.value.slice(position, position + field.width)
+    const bitRange = getFieldBitRange(field)
+    // Extract bits from the binary array (bit 0 is rightmost, bit 63 is leftmost)
+    const groupBits = []
+    for (let i = bitRange.start; i <= bitRange.end; i++) {
+      groupBits.unshift(binArray.value[63 - i]) // unshift to maintain bit order
+    }
 
     // Calculate current group's value
     const binaryString = groupBits.join('')
@@ -101,15 +125,15 @@ const binGroups = computed(() => {
     groups.push({
       bits: groupBits,
       name: displayName,
-      startIndex: position,
+      startIndex: bitRange.start,
       value: decimalValue,
       alias: alias,
       styleType: styleType,
     })
   }
 
-  // For display, high bits come first, need to recalculate startIndex
-  return groups.reverse()
+  // Return groups ordered by bit position (high to low for display)
+  return groups.sort((a, b) => b.startIndex - a.startIndex)
 })
 </script>
 
@@ -124,7 +148,7 @@ const binGroups = computed(() => {
             v-for="(bit, bitIdx) in group.bits"
             :key="bitIdx"
             class="bit-digit"
-            @click="toggleBit(group.startIndex + bitIdx)"
+            @click="toggleBit(group.startIndex + (group.bits.length - 1 - bitIdx))"
           >
             {{ bit }}
           </span>

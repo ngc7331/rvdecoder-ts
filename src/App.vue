@@ -116,7 +116,7 @@ const handleToggleBit = (bitIndex: number) => {
   const binArray = binStr.split('').map((bit) => parseInt(bit))
 
   // Toggle specified bit
-  binArray[bitIndex] = binArray[bitIndex] === 0 ? 1 : 0
+  binArray[63 - bitIndex] = binArray[63 - bitIndex] === 0 ? 1 : 0
 
   // Convert back to hexadecimal
   const newBinStr = binArray.join('')

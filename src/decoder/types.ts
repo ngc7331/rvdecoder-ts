@@ -4,7 +4,8 @@ export enum DecodeFieldType {
 }
 
 export interface DecodeField {
-  width: number
+  low: number
+  high?: number
   name?: string
   value?: string[] | Map<BigInt, string>
   type?: DecodeFieldType
