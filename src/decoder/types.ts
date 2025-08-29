@@ -26,6 +26,7 @@ export interface DecodeField {
   description?: string
   value?: string[] | Map<bigint, string>
   type?: DecodeFieldType
+  extra?: (value: bigint) => string
 }
 
 export interface DecodeCondition {

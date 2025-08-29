@@ -3,7 +3,7 @@ import RegisterCard from './components/RegisterCard.vue'
 import { decoders } from './decoder'
 import { ref, computed, watch } from 'vue'
 
-const hexInput = ref('')
+const hexInput = ref('0000000000000000')
 const errorMessage = ref('')
 
 // Read initial selected state from localStorage, default to 'general.general' if not available

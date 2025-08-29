@@ -170,19 +170,12 @@ const validateFields = () => {
 
 // Calculate binary array based on input hexValue
 const binArray = computed(() => {
-  const hex = props.hexValue.replace(/[^0-9a-fA-F]/g, '')
-  if (!hex) {
-    return new Array(64).fill(0)
-  }
-
-  try {
-    const num = BigInt('0x' + hex)
-    const binStr = num.toString(2).padStart(64, '0')
-    return binStr.split('').map((bit) => parseInt(bit))
-  } catch {
-    return new Array(64).fill(0)
-  }
+  const binStr = fullValue.value.toString(2).padStart(64, '0')
+  return binStr.split('').map((bit) => parseInt(bit))
 })
+
+// Calculate the 64-bit value for extra functions
+const fullValue = computed(() => BigInt('0x' + props.hexValue))
 
 // Validate when binArray is ready
 watchEffect(() => {
@@ -255,6 +248,27 @@ const binGroups = computed(() => {
   // Return groups ordered by bit position (high to low for display)
   return groups.sort((a, b) => b.startIndex - a.startIndex)
 })
+
+// Collect extra information from all fields with extra functions
+const extraInfo = computed(() => {
+  const effectiveFields = getEffectiveFields(props.fields)
+  const extraStrings: string[] = []
+
+  for (const field of effectiveFields) {
+    if (field.extra && typeof field.extra === 'function') {
+      try {
+        const extraString = field.extra(fullValue.value)
+        if (extraString && extraString.trim()) {
+          extraStrings.push(extraString)
+        }
+      } catch (error) {
+        console.error(`Error calling extra function for field ${field.name}:`, error)
+      }
+    }
+  }
+
+  return extraStrings
+})
 </script>
 
 <template>
@@ -280,6 +294,11 @@ const binGroups = computed(() => {
         </div>
         <div v-if="group.alias" class="bin-alias" :class="group.styleType">{{ group.alias }}</div>
         <div v-else class="bin-alias-placeholder"></div>
+      </div>
+    </div>
+    <div v-if="extraInfo.length > 0" class="extra-info">
+      <div v-for="(info, index) in extraInfo" :key="index" class="extra-line">
+        {{ info }}
       </div>
     </div>
   </div>
@@ -383,5 +402,22 @@ const binGroups = computed(() => {
 .bin-alias.red {
   background: #ffe6e6;
   color: #d32f2f;
+}
+.extra-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+.extra-line {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #495057;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.extra-line:last-child {
+  margin-bottom: 0;
 }
 </style>

@@ -54,24 +54,81 @@ export const rs1Rsvd: DecodeField = {
   high: 19,
 }
 
-export const immI: DecodeField[] = [{ name: 'immI[11:0]', low: 20, high: 31 }]
+const renderImm = (value: bigint) => {
+  return `0x${value.toString(16)} (${value.toString()})`
+}
+
+export const immI: DecodeField[] = [
+  {
+    name: 'immI[11:0]',
+    low: 20,
+    high: 31,
+    extra: (value) => {
+      const imm = (value >> 20n) & 0xfffn
+      return `Immediate(I-type) = ${renderImm(imm)}`
+    },
+  },
+]
 
 export const immS: DecodeField[] = [
-  { name: 'immS[4:0]', low: 7, high: 11 },
+  {
+    name: 'immS[4:0]',
+    low: 7,
+    high: 11,
+    extra: (value) => {
+      const imm4_0 = (value >> 7n) & 0x1fn
+      const imm11_5 = (value >> 25n) & 0x7fn
+      const imm = (imm11_5 << 5n) | imm4_0
+      return `Immediate(S-type) = ${renderImm(imm)}`
+    },
+  },
   { name: 'immS[11:5]', low: 25, high: 31 },
 ]
 
 export const immB: DecodeField[] = [
-  { name: 'immB[11]', low: 7 },
+  {
+    name: 'immB[11]',
+    low: 7,
+    extra: (value) => {
+      const imm11 = (value >> 7n) & 0x1n
+      const imm4_1 = (value >> 8n) & 0xfn
+      const imm10_5 = (value >> 25n) & 0x3fn
+      const imm12 = (value >> 31n) & 0x1n
+      const imm = (imm12 << 12n) | (imm11 << 11n) | (imm10_5 << 5n) | (imm4_1 << 1n)
+      return `Immediate(B-type) = ${renderImm(imm)}`
+    },
+  },
   { name: 'immB[4:1]', low: 8, high: 11 },
   { name: 'immB[10:5]', low: 25, high: 30 },
   { name: 'immB[12]', low: 31 },
 ]
 
-export const immU: DecodeField[] = [{ name: 'immU[31:12]', low: 12, high: 31 }]
+export const immU: DecodeField[] = [
+  {
+    name: 'immU[31:12]',
+    low: 12,
+    high: 31,
+    extra: (value) => {
+      const imm = value & 0xfffff000n
+      return `Immediate(U-type) = ${renderImm(imm)}`
+    },
+  },
+]
 
 export const immJ: DecodeField[] = [
-  { name: 'immJ[19:12]', low: 12, high: 19 },
+  {
+    name: 'immJ[19:12]',
+    low: 12,
+    high: 19,
+    extra: (value) => {
+      const imm19_12 = (value >> 12n) & 0xffn
+      const imm11 = (value >> 20n) & 0x1n
+      const imm10_1 = (value >> 21n) & 0x3ffn
+      const imm20 = (value >> 31n) & 0x1n
+      const imm = (imm20 << 20n) | (imm19_12 << 12n) | (imm11 << 11n) | (imm10_1 << 1n)
+      return `Immediate(J-type) = ${renderImm(imm)}`
+    },
+  },
   { name: 'immJ[11]', low: 20 },
   { name: 'immJ[10:1]', low: 21, high: 30 },
   { name: 'immJ[20]', low: 31 },
