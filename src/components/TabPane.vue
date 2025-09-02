@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 
 import { decoders } from '@/decoder'
 import type { Tab } from '@/types/tab'
@@ -15,6 +15,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update-tab': [updates: Partial<Tab>]
+  'select-tab': []
 }>()
 
 // Get filtered decoder configs for this tab
@@ -111,12 +112,65 @@ const hexInputModel = computed({
     emit('update-tab', { hexInput: value })
   },
 })
+
+// Handle tab pane click to select this tab
+const handleTabPaneClick = () => {
+  emit('select-tab')
+}
+
+// Handle tab name editing
+const isEditingName = ref(false)
+const tempTabName = ref('')
+const tabNameInput = ref<HTMLInputElement>()
+
+const startEditTabName = () => {
+  isEditingName.value = true
+  tempTabName.value = props.tab.name
+  nextTick(() => {
+    if (tabNameInput.value) {
+      tabNameInput.value.focus()
+      tabNameInput.value.select()
+    }
+  })
+}
+
+const saveTabName = () => {
+  if (tempTabName.value.trim()) {
+    emit('update-tab', { name: tempTabName.value.trim() })
+  }
+  isEditingName.value = false
+  tempTabName.value = ''
+}
+
+const cancelEditTabName = () => {
+  isEditingName.value = false
+  tempTabName.value = ''
+}
 </script>
 
 <template>
-  <div class="tab-pane" :class="{ active: isActive }">
+  <div class="tab-pane" :class="{ active: isActive }" @click="handleTabPaneClick">
     <div class="tab-header">
-      <h3>{{ tab.name }}</h3>
+      <div class="tab-title-container">
+        <button
+          class="tab-edit-btn"
+          @click.stop="startEditTabName"
+          :title="`Edit ${tab.name}`"
+        >
+          ✏️
+        </button>
+        <h3 v-if="!isEditingName" class="tab-title">{{ tab.name }}</h3>
+        <input
+          v-else
+          ref="tabNameInput"
+          v-model="tempTabName"
+          @blur="saveTabName"
+          @keyup.enter="saveTabName"
+          @keyup.escape="cancelEditTabName"
+          @click.stop
+          class="tab-title-input"
+        />
+      </div>
     </div>
     <div class="global-input">
       <div class="input-container">
@@ -165,10 +219,43 @@ const hexInputModel = computed({
   padding-bottom: 8px;
   border-bottom: 1px solid #e0e0e0;
 }
-.tab-header h3 {
+.tab-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab-edit-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.tab-edit-btn:hover {
+  background-color: #f0f0f0;
+  color: #2196f3;
+}
+.tab-title {
   margin: 0;
   color: #2c3e50;
   font-size: 1.1rem;
+  flex: 1;
+}
+.tab-title-input {
+  background: white;
+  border: 1px solid #2196f3;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  outline: none;
+  flex: 1;
 }
 .global-input {
   margin-bottom: 20px;

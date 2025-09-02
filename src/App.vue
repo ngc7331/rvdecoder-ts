@@ -119,6 +119,21 @@ const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
 
+// Clear localStorage and reset to default state
+const clearStorage = () => {
+  if (confirm('Are you sure you want to clear all saved data and reset to default state?')) {
+    try {
+      localStorage.removeItem('rvdecoder-tabs-state')
+      // Reset to default state
+      tabs.value = [emptyTab(1, 'Tab 1')]
+      activeTabId.value = 1
+      sidebarCollapsed.value = false
+    } catch (error) {
+      console.warn('Failed to clear localStorage:', error)
+    }
+  }
+}
+
 // Handle tab updates from TabPane components
 const handleTabUpdate = (tabId: number, updates: Partial<Tab>) => {
   const tab = tabs.value.find((t) => t.id === tabId)
@@ -208,25 +223,30 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
         <!-- Tab Navigation -->
         <div class="tab-navigation">
           <div class="tab-list">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              class="tab-button"
-              :class="{ active: activeTabId === tab.id }"
-              @click="selectTab(tab.id)"
-            >
-              <span class="tab-name">{{ tab.name }}</span>
+            <div class="tab-controls-left">
               <button
-                v-if="tabs.length > 1"
-                class="tab-close"
-                @click.stop="removeTab(tab.id)"
-                :title="`Close ${tab.name}`"
+                v-for="tab in tabs"
+                :key="tab.id"
+                class="tab-button"
+                :class="{ active: activeTabId === tab.id }"
+                @click="selectTab(tab.id)"
               >
-                ×
+                <span class="tab-name">{{ tab.name }}</span>
+                <button
+                  v-if="tabs.length > 1"
+                  class="tab-close"
+                  @click.stop="removeTab(tab.id)"
+                  :title="`Close ${tab.name}`"
+                >
+                  ×
+                </button>
               </button>
-            </button>
-            <button v-if="tabs.length < 4" class="tab-add" @click="addTab" title="Add new tab">
-              +
+              <button v-if="tabs.length < 4" class="tab-add" @click="addTab" title="Add new tab">
+                +
+              </button>
+            </div>
+            <button class="tab-clear" @click="clearStorage" title="Clear all saved data">
+              🗑️
             </button>
           </div>
         </div>
@@ -247,6 +267,7 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
             :tab="tab"
             :is-active="activeTabId === tab.id"
             @update-tab="(updates) => handleTabUpdate(tab.id, updates)"
+            @select-tab="selectTab(tab.id)"
           />
         </div>
       </div>
@@ -380,9 +401,14 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
 }
 .tab-list {
   display: flex;
-  gap: 4px;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 8px;
+}
+.tab-controls-left {
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 .tab-button {
   display: flex;
@@ -396,7 +422,6 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
-  top: 1px;
 }
 .tab-button:hover {
   background-color: #f8f9fa;
@@ -444,6 +469,20 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
 .tab-add:hover {
   background-color: #e9ecef;
   border-color: #999;
+}
+.tab-clear {
+  padding: 8px 12px;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #e53e3e;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.tab-clear:hover {
+  background-color: #fed7d7;
+  border-color: #e53e3e;
 }
 
 /* Tab Content Grid */
