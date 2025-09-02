@@ -152,11 +152,7 @@ const cancelEditTabName = () => {
   <div class="tab-pane" :class="{ active: isActive }" @click="handleTabPaneClick">
     <div class="tab-header">
       <div class="tab-title-container">
-        <button
-          class="tab-edit-btn"
-          @click.stop="startEditTabName"
-          :title="`Edit ${tab.name}`"
-        >
+        <button class="tab-edit-btn" @click.stop="startEditTabName" :title="`Edit ${tab.name}`">
           ✏️
         </button>
         <h3 v-if="!isEditingName" class="tab-title">{{ tab.name }}</h3>
