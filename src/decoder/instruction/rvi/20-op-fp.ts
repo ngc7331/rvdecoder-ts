@@ -1,4 +1,4 @@
-import type { DecodeField, ConditionalDecodeMode } from '../../types'
+import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
 import {
   frd,
   frs1,

@@ -1,5 +1,5 @@
-import { DecodeFieldType } from '../types'
-import type { DecodeMode } from '../types'
+import { DecodeFieldType } from '../../types/decoder'
+import type { DecodeMode } from '../../types/decoder'
 
 export const mMode: DecodeMode[] = [
   // 0x300 - mstatus

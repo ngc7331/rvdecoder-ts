@@ -1,9 +1,9 @@
-export * from './types'
+export * from '../types/decoder'
 
 import { generalDecoders } from './general'
 import { csrDecoders } from './csr'
 import { instructionDecoders } from './instruction'
-import type { DecodeCategory } from './types'
+import type { DecodeCategory } from '../types/decoder'
 
 export const decoders: DecodeCategory[] = [
   {

@@ -1,5 +1,5 @@
-import { DecodeFieldType } from '../../types'
-import type { DecodeField, ConditionalDecodeMode, DecodeExtraInfo } from '../../types'
+import { DecodeFieldType } from '../../../types/decoder'
+import type { DecodeField, ConditionalDecodeMode, DecodeExtraInfo } from '../../../types/decoder'
 import {
   funct3,
   funct2H,

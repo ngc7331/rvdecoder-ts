@@ -1,4 +1,4 @@
-import type { DecodeMode } from '../types'
+import type { DecodeMode } from '../../types/decoder'
 
 import { rvc0Fields, rvc1Fields, rvc2Fields } from './rvc'
 import { rviFields } from './rvi'

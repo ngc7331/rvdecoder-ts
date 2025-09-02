@@ -1,5 +1,5 @@
-import { DecodeFieldType } from '../../types'
-import type { DecodeField, ConditionalDecodeMode } from '../../types'
+import { DecodeFieldType } from '../../../types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
 
 import { loadFields } from './00-load'
 import { loadFpFields } from './01-load-fp'

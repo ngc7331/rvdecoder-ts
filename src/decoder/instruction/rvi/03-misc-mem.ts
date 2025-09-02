@@ -1,5 +1,5 @@
-import { DecodeFieldType } from '../../types'
-import type { DecodeField, ConditionalDecodeMode } from '../../types'
+import { DecodeFieldType } from '../../../types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
 import { rd, rs1, immI, funct3, rdRsvd, rs1Rsvd } from './common'
 
 export const miscMemFields: (DecodeField | ConditionalDecodeMode)[] = [

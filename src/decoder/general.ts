@@ -1,4 +1,4 @@
-import type { DecodeMode } from './types'
+import type { DecodeMode } from '../types/decoder'
 
 export const generalDecoders: DecodeMode[] = [
   {

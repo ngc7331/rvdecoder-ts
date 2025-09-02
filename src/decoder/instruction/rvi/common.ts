@@ -1,5 +1,5 @@
-import { DecodeFieldType } from '../../types'
-import type { DecodeField } from '../../types'
+import { DecodeFieldType } from '../../../types/decoder'
+import type { DecodeField } from '../../../types/decoder'
 import { renderImm } from '../../utils/renderImm'
 import { registerNames, fRegisterNames } from '../common'
 

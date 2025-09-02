@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue'
 
-import type { DecodeMode, DecodeField, ConditionalDecodeMode } from '@/decoder/types'
+import type { DecodeMode, DecodeField, ConditionalDecodeMode } from '@/types/decoder'
 import {
   DecodeFieldType,
   decodeFieldTypeDisplayName,
   decodeFieldTypeDescription,
-} from '@/decoder/types'
+} from '@/types/decoder'
 
 interface Props extends DecodeMode {
   hexValue: string
