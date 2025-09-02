@@ -6,6 +6,41 @@ import type { Tab } from '@/types/tab'
 
 import TabPane from './components/TabPane.vue'
 
+const emptyTab: (id: number, name: string) => Tab = (id: number, name: string) => ({
+  id,
+  name,
+  hexInput: '0000000000000000',
+  errorMessage: '',
+  selectedDecoders: new Set(['general.general']),
+})
+
+// Tab management functions
+const addTab = () => {
+  if (tabs.value.length >= 4) return
+
+  const newId = Math.max(...tabs.value.map((t) => t.id)) + 1
+  tabs.value.push(emptyTab(newId, `Tab ${newId}`))
+  activeTabId.value = newId
+}
+
+const removeTab = (tabId: number) => {
+  if (tabs.value.length <= 1) return
+
+  const index = tabs.value.findIndex((tab) => tab.id === tabId)
+  if (index !== -1) {
+    tabs.value.splice(index, 1)
+
+    // If removing the active tab, switch to another
+    if (activeTabId.value === tabId) {
+      activeTabId.value = tabs.value[Math.max(0, index - 1)].id
+    }
+  }
+}
+
+const selectTab = (tabId: number) => {
+  activeTabId.value = tabId
+}
+
 // Save tabs state to localStorage
 const saveTabsState = () => {
   try {
@@ -65,22 +100,6 @@ const loadTabsState = () => {
   }
 }
 
-// Initialize state from localStorage or defaults
-const initialState = loadTabsState()
-
-// Tabs management
-const tabs = ref<Tab[]>(initialState.tabs)
-const activeTabId = ref(initialState.activeTabId)
-const sidebarCollapsed = ref(initialState.sidebarCollapsed)
-
-// Get active tab
-const activeTab = computed(
-  () => tabs.value.find((tab) => tab.id === activeTabId.value) || tabs.value[0],
-)
-
-// Watch tabs changes and save to localStorage
-watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
-
 // Toggle decoder selection state for active tab
 const toggleDecoder = (decoderKey: string) => {
   const tab = activeTab.value
@@ -98,41 +117,6 @@ const toggleDecoder = (decoderKey: string) => {
   tab.selectedDecoders = newSelectedDecoders
 }
 
-const emptyTab = (id: number, name: string) => ({
-  id,
-  name,
-  hexInput: '0000000000000000',
-  errorMessage: '',
-  selectedDecoders: new Set(['general.general']),
-})
-
-// Tab management functions
-const addTab = () => {
-  if (tabs.value.length >= 4) return
-
-  const newId = Math.max(...tabs.value.map((t) => t.id)) + 1
-  tabs.value.push(emptyTab(newId, `Tab ${newId}`))
-  activeTabId.value = newId
-}
-
-const removeTab = (tabId: number) => {
-  if (tabs.value.length <= 1) return
-
-  const index = tabs.value.findIndex((tab) => tab.id === tabId)
-  if (index !== -1) {
-    tabs.value.splice(index, 1)
-
-    // If removing the active tab, switch to another
-    if (activeTabId.value === tabId) {
-      activeTabId.value = tabs.value[Math.max(0, index - 1)].id
-    }
-  }
-}
-
-const selectTab = (tabId: number) => {
-  activeTabId.value = tabId
-}
-
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
@@ -144,6 +128,23 @@ const handleTabUpdate = (tabId: number, updates: Partial<Tab>) => {
     Object.assign(tab, updates)
   }
 }
+
+// Initialize state from localStorage or defaults
+const initialState = loadTabsState()
+
+// Tabs management
+const tabs = ref<Tab[]>(initialState.tabs)
+const activeTabId = ref(initialState.activeTabId)
+const sidebarCollapsed = ref(initialState.sidebarCollapsed)
+
+// Get active tab
+const activeTab = computed(
+  () => tabs.value.find((tab) => tab.id === activeTabId.value) || tabs.value[0],
+)
+
+// Watch tabs changes and save to localStorage
+watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
+
 </script>
 
 <template>
