@@ -173,6 +173,7 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
         <TabNavigation
           :tabs="tabs"
           :active-tab-id="activeTabId"
+          :sidebar-collapsed="sidebarCollapsed"
           @add-tab="addTab"
           @remove-tab="removeTab"
           @select-tab="selectTab"
@@ -194,6 +195,7 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
             :key="tab.id"
             :tab="tab"
             :is-active="activeTabId === tab.id"
+            :is-double-row="tabs.length > 2"
             @update-tab="(updates) => handleTabUpdate(tab.id, updates)"
             @select-tab="selectTab(tab.id)"
           />
@@ -217,7 +219,7 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
 }
 .content-area {
   flex: 1;
-  padding: 24px;
+  padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -227,7 +229,7 @@ watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
 .tab-content-grid {
   flex: 1;
   display: grid;
-  gap: 20px;
+  gap: 10px;
 }
 .tab-content-grid.single {
   grid-template-columns: 1fr;

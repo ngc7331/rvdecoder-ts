@@ -9,6 +9,7 @@ import DecoderCard from './DecoderCard.vue'
 interface Props {
   tab: Tab
   isActive: boolean
+  isDoubleRow: boolean
 }
 
 const props = defineProps<Props>()
@@ -149,11 +150,14 @@ const cancelEditTabName = () => {
 </script>
 
 <template>
-  <div class="tab-pane" :class="{ active: isActive }" @click="handleTabPaneClick">
+  <div class="tab-pane" :class="{ active: isActive, 'double-row': isDoubleRow }" @click="handleTabPaneClick">
     <div class="tab-header">
       <div class="tab-title-container">
         <button class="tab-edit-btn" @click.stop="startEditTabName" :title="`Edit ${tab.name}`">
-          ✏️
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
         </button>
         <h3 v-if="!isEditingName" class="tab-title">{{ tab.name }}</h3>
         <input
@@ -205,10 +209,42 @@ const cancelEditTabName = () => {
   border: 2px solid transparent;
   transition: border-color 0.2s;
   overflow-y: auto;
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 70px);
+}
+
+/* Custom scrollbar for tab pane */
+.tab-pane::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tab-pane::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 4px;
+}
+
+.tab-pane::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.tab-pane::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.tab-pane.active::-webkit-scrollbar-thumb {
+  background: #93c5fd;
+}
+
+.tab-pane.active::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
 }
 .tab-pane.active {
   border-color: #2196f3;
+}
+.tab-pane.double-row {
+  max-height: calc(50vh - 40px);
 }
 .tab-header {
   margin-bottom: 16px;
@@ -285,7 +321,6 @@ const cancelEditTabName = () => {
   color: #666;
   font-weight: bold;
   margin-right: 4px;
-  font-family: monospace;
   letter-spacing: 0.1em;
   font-size: 0.9rem;
 }
@@ -294,7 +329,6 @@ const cancelEditTabName = () => {
   border: none;
   outline: none;
   font-size: 0.9rem;
-  font-family: monospace;
   letter-spacing: 0.1em;
 }
 .page-content {

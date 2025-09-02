@@ -342,14 +342,14 @@ const extraInfo = computed(() => {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 32px 24px;
+  padding: 10px 20px;
   min-width: 320px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 .card-title {
   font-size: 1.3rem;
   font-weight: bold;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .bin-output {
   display: flex;
@@ -369,7 +369,6 @@ const extraInfo = computed(() => {
 .bin-bits {
   border-radius: 4px;
   padding: 4px 8px;
-  font-family: monospace;
   font-size: 1rem;
   display: flex;
   flex-wrap: wrap;
@@ -487,7 +486,6 @@ const extraInfo = computed(() => {
   color: #007bff;
 }
 .extra-line {
-  font-family: monospace;
   font-size: 0.85rem;
   line-height: 1.4;
   margin-bottom: 4px;
