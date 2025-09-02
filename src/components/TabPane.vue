@@ -73,6 +73,17 @@ const handleInputChange = () => {
   emit('update-tab', { errorMessage: '' })
 }
 
+// Handle blur event to auto-pad with zeros to 16 digits
+const handleInputBlur = () => {
+  const hex = props.tab.hexInput.replace(/[^0-9a-fA-F]/g, '').toLowerCase()
+
+  // Only pad if there's valid hex input and no error
+  if (hex && !props.tab.errorMessage) {
+    const paddedHex = hex.padStart(16, '0')
+    emit('update-tab', { hexInput: paddedHex })
+  }
+}
+
 // Handle bit toggle for this tab
 const handleToggleBit = (bitIndex: number) => {
   const hex = props.tab.hexInput.replace(/[^0-9a-fA-F]/g, '')
@@ -114,6 +125,7 @@ const hexInputModel = computed({
           <input
             v-model="hexInputModel"
             @input="handleInputChange"
+            @blur="handleInputBlur"
             class="hex-input"
             placeholder="0000000000000000"
           />

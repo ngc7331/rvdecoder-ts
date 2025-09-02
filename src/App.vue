@@ -92,9 +92,7 @@ const loadTabsState = () => {
 
   // Return default state if no saved state or error
   return {
-    tabs: [
-      emptyTab(1, 'Tab 1'),
-    ],
+    tabs: [emptyTab(1, 'Tab 1')],
     activeTabId: 1,
     sidebarCollapsed: false,
   }
@@ -144,7 +142,6 @@ const activeTab = computed(
 
 // Watch tabs changes and save to localStorage
 watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
-
 </script>
 
 <template>
