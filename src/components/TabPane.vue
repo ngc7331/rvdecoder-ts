@@ -13,6 +13,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const emit = defineEmits<{
+  'update-tab': [updates: Partial<Tab>]
+}>()
+
 // Get filtered decoder configs for this tab
 const getFilteredDecoderConfigs = () => {
   const result = []
@@ -40,13 +44,13 @@ const handleInputChange = () => {
 
   // If 0x prefix was removed, update input box
   if (originalInput.toLowerCase().startsWith('0x')) {
-    props.tab.hexInput = withoutPrefix
+    emit('update-tab', { hexInput: withoutPrefix })
     return
   }
 
   // Check if contains non-hexadecimal characters
   if (withoutPrefix && withoutPrefix !== hex) {
-    props.tab.errorMessage = 'Only hexadecimal characters allowed (0-9, A-F)'
+    emit('update-tab', { errorMessage: 'Only hexadecimal characters allowed (0-9, A-F)' })
     return
   }
 
@@ -56,17 +60,17 @@ const handleInputChange = () => {
       const num = BigInt('0x' + hex)
       const binStr = num.toString(2)
       if (binStr.length > 64) {
-        props.tab.errorMessage = 'Value exceeds 64-bit range'
+        emit('update-tab', { errorMessage: 'Value exceeds 64-bit range' })
         return
       }
     } catch {
-      props.tab.errorMessage = 'Invalid hexadecimal number'
+      emit('update-tab', { errorMessage: 'Invalid hexadecimal number' })
       return
     }
   }
 
   // Clear error state
-  props.tab.errorMessage = ''
+  emit('update-tab', { errorMessage: '' })
 }
 
 // Handle bit toggle for this tab
@@ -84,14 +88,16 @@ const handleToggleBit = (bitIndex: number) => {
   // Convert back to hexadecimal
   const newBinStr = binArray.join('')
   const newNum = BigInt('0b' + newBinStr)
-  props.tab.hexInput = newNum.toString(16).toUpperCase().padStart(16, '0')
+  const newHexInput = newNum.toString(16).toUpperCase().padStart(16, '0')
+
+  emit('update-tab', { hexInput: newHexInput })
 }
 
 // Computed property for hex input v-model
 const hexInputModel = computed({
   get: () => props.tab.hexInput,
   set: (value: string) => {
-    props.tab.hexInput = value
+    emit('update-tab', { hexInput: value })
   },
 })
 </script>

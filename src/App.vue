@@ -6,61 +6,80 @@ import type { Tab } from '@/types/tab'
 
 import TabPane from './components/TabPane.vue'
 
-// Get initial selected state from localStorage, default to 'general.general' if not available
-const getInitialSelectedDecoders = (): Set<string> => {
+// Save tabs state to localStorage
+const saveTabsState = () => {
   try {
-    const saved = localStorage.getItem('rvdecoder-selectedDecoders')
+    const tabsData = {
+      tabs: tabs.value.map((tab) => ({
+        id: tab.id,
+        name: tab.name,
+        hexInput: tab.hexInput,
+        errorMessage: tab.errorMessage,
+        selectedDecoders: Array.from(tab.selectedDecoders),
+      })),
+      activeTabId: activeTabId.value,
+      sidebarCollapsed: sidebarCollapsed.value,
+    }
+    localStorage.setItem('rvdecoder-tabs-state', JSON.stringify(tabsData))
+  } catch (error) {
+    console.warn('Failed to save tabs state to localStorage:', error)
+  }
+}
+
+// Load tabs state from localStorage
+const loadTabsState = () => {
+  try {
+    const saved = localStorage.getItem('rvdecoder-tabs-state')
     if (saved) {
       const parsed = JSON.parse(saved)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return new Set(parsed)
+      if (parsed && parsed.tabs && Array.isArray(parsed.tabs) && parsed.tabs.length > 0) {
+        return {
+          tabs: parsed.tabs.map(
+            (tab: {
+              id: number
+              name: string
+              hexInput: string
+              errorMessage: string
+              selectedDecoders: string[]
+            }) => ({
+              ...tab,
+              selectedDecoders: new Set(tab.selectedDecoders || ['general.general']),
+            }),
+          ),
+          activeTabId: parsed.activeTabId || parsed.tabs[0]?.id || 1,
+          sidebarCollapsed: parsed.sidebarCollapsed || false,
+        }
       }
     }
   } catch (error) {
-    console.warn('Failed to load selected decoders from localStorage:', error)
+    console.warn('Failed to load tabs state from localStorage:', error)
   }
-  return new Set(['general.general'])
+
+  // Return default state if no saved state or error
+  return {
+    tabs: [
+      emptyTab(1, 'Tab 1'),
+    ],
+    activeTabId: 1,
+    sidebarCollapsed: false,
+  }
 }
 
+// Initialize state from localStorage or defaults
+const initialState = loadTabsState()
+
 // Tabs management
-const tabs = ref<Tab[]>([
-  {
-    id: '1',
-    name: 'Tab 1',
-    hexInput: '0000000000000000',
-    errorMessage: '',
-    selectedDecoders: new Set(getInitialSelectedDecoders()), // Create a new Set instance
-  },
-])
-const activeTabId = ref('1')
-const sidebarCollapsed = ref(false)
+const tabs = ref<Tab[]>(initialState.tabs)
+const activeTabId = ref(initialState.activeTabId)
+const sidebarCollapsed = ref(initialState.sidebarCollapsed)
 
 // Get active tab
 const activeTab = computed(
   () => tabs.value.find((tab) => tab.id === activeTabId.value) || tabs.value[0],
 )
 
-// Watch selectedDecoders changes for active tab, save to localStorage
-watch(
-  () => activeTab.value?.selectedDecoders,
-  (newDecoders) => {
-    if (newDecoders) {
-      try {
-        const decodersArray = Array.from(newDecoders)
-        localStorage.setItem('rvdecoder-selectedDecoders', JSON.stringify(decodersArray))
-      } catch (error) {
-        console.warn('Failed to save selected decoders to localStorage:', error)
-      }
-    }
-  },
-  { deep: true },
-)
-
-// Watch for tab changes to force reactivity
-watch(activeTabId, () => {
-  // Force re-evaluation of computed properties when tab changes
-  // This helps ensure the UI updates correctly
-})
+// Watch tabs changes and save to localStorage
+watch([tabs, activeTabId, sidebarCollapsed], saveTabsState, { deep: true })
 
 // Toggle decoder selection state for active tab
 const toggleDecoder = (decoderKey: string) => {
@@ -79,23 +98,24 @@ const toggleDecoder = (decoderKey: string) => {
   tab.selectedDecoders = newSelectedDecoders
 }
 
+const emptyTab = (id: number, name: string) => ({
+  id,
+  name,
+  hexInput: '0000000000000000',
+  errorMessage: '',
+  selectedDecoders: new Set(['general.general']),
+})
+
 // Tab management functions
 const addTab = () => {
   if (tabs.value.length >= 4) return
 
-  const newId = (Math.max(...tabs.value.map((t) => parseInt(t.id))) + 1).toString()
-  const newTab: Tab = {
-    id: newId,
-    name: `Tab ${newId}`,
-    hexInput: '0000000000000000',
-    errorMessage: '',
-    selectedDecoders: new Set(getInitialSelectedDecoders()), // Create a new Set instance
-  }
-  tabs.value.push(newTab)
+  const newId = Math.max(...tabs.value.map((t) => t.id)) + 1
+  tabs.value.push(emptyTab(newId, `Tab ${newId}`))
   activeTabId.value = newId
 }
 
-const removeTab = (tabId: string) => {
+const removeTab = (tabId: number) => {
   if (tabs.value.length <= 1) return
 
   const index = tabs.value.findIndex((tab) => tab.id === tabId)
@@ -109,12 +129,20 @@ const removeTab = (tabId: string) => {
   }
 }
 
-const selectTab = (tabId: string) => {
+const selectTab = (tabId: number) => {
   activeTabId.value = tabId
 }
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
+}
+
+// Handle tab updates from TabPane components
+const handleTabUpdate = (tabId: number, updates: Partial<Tab>) => {
+  const tab = tabs.value.find((t) => t.id === tabId)
+  if (tab) {
+    Object.assign(tab, updates)
+  }
 }
 </script>
 
@@ -220,6 +248,7 @@ const toggleSidebar = () => {
             :key="tab.id"
             :tab="tab"
             :is-active="activeTabId === tab.id"
+            @update-tab="(updates) => handleTabUpdate(tab.id, updates)"
           />
         </div>
       </div>

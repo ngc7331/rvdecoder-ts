@@ -1,5 +1,5 @@
 export interface Tab {
-  id: string
+  id: number
   name: string
   hexInput: string
   errorMessage: string
