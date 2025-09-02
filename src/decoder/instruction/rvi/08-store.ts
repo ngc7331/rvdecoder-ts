@@ -1,4 +1,5 @@
-import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '@/types/decoder'
+
 import { rs1, rs2, immS, funct3 } from './common'
 
 export const storeFields: (DecodeField | ConditionalDecodeMode)[] = [

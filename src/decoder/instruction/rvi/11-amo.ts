@@ -1,4 +1,5 @@
-import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '@/types/decoder'
+
 import { rd, rs1, rs2, funct3 } from './common'
 
 // AMO operation codes (funct7[6:2])

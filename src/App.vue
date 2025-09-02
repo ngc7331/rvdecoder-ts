@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import TabPane from './components/TabPane.vue'
-import { decoders } from './decoder'
 import { ref, computed, watch } from 'vue'
-import type { Tab } from './types/tab'
+
+import { decoders } from '@/decoder'
+import type { Tab } from '@/types/tab'
+
+import TabPane from './components/TabPane.vue'
 
 // Get initial selected state from localStorage, default to 'general.general' if not available
 const getInitialSelectedDecoders = (): Set<string> => {
@@ -27,14 +29,16 @@ const tabs = ref<Tab[]>([
     name: 'Tab 1',
     hexInput: '0000000000000000',
     errorMessage: '',
-    selectedDecoders: new Set(getInitialSelectedDecoders()) // Create a new Set instance
-  }
+    selectedDecoders: new Set(getInitialSelectedDecoders()), // Create a new Set instance
+  },
 ])
 const activeTabId = ref('1')
 const sidebarCollapsed = ref(false)
 
 // Get active tab
-const activeTab = computed(() => tabs.value.find(tab => tab.id === activeTabId.value) || tabs.value[0])
+const activeTab = computed(
+  () => tabs.value.find((tab) => tab.id === activeTabId.value) || tabs.value[0],
+)
 
 // Watch selectedDecoders changes for active tab, save to localStorage
 watch(
@@ -53,13 +57,10 @@ watch(
 )
 
 // Watch for tab changes to force reactivity
-watch(
-  activeTabId,
-  () => {
-    // Force re-evaluation of computed properties when tab changes
-    // This helps ensure the UI updates correctly
-  }
-)
+watch(activeTabId, () => {
+  // Force re-evaluation of computed properties when tab changes
+  // This helps ensure the UI updates correctly
+})
 
 // Toggle decoder selection state for active tab
 const toggleDecoder = (decoderKey: string) => {
@@ -82,13 +83,13 @@ const toggleDecoder = (decoderKey: string) => {
 const addTab = () => {
   if (tabs.value.length >= 4) return
 
-  const newId = (Math.max(...tabs.value.map(t => parseInt(t.id))) + 1).toString()
+  const newId = (Math.max(...tabs.value.map((t) => parseInt(t.id))) + 1).toString()
   const newTab: Tab = {
     id: newId,
     name: `Tab ${newId}`,
     hexInput: '0000000000000000',
     errorMessage: '',
-    selectedDecoders: new Set(getInitialSelectedDecoders()) // Create a new Set instance
+    selectedDecoders: new Set(getInitialSelectedDecoders()), // Create a new Set instance
   }
   tabs.value.push(newTab)
   activeTabId.value = newId
@@ -97,7 +98,7 @@ const addTab = () => {
 const removeTab = (tabId: string) => {
   if (tabs.value.length <= 1) return
 
-  const index = tabs.value.findIndex(tab => tab.id === tabId)
+  const index = tabs.value.findIndex((tab) => tab.id === tabId)
   if (index !== -1) {
     tabs.value.splice(index, 1)
 
@@ -123,12 +124,32 @@ const toggleSidebar = () => {
       <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
         <div class="sidebar-header">
           <h3>Decode mode</h3>
-          <button @click="toggleSidebar" class="sidebar-toggle" :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
-            <svg v-if="sidebarCollapsed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6"/>
+          <button
+            @click="toggleSidebar"
+            class="sidebar-toggle"
+            :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+          >
+            <svg
+              v-if="sidebarCollapsed"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 18l6-6-6-6" />
             </svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M15 18l-6-6 6-6"/>
+            <svg
+              v-else
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
         </div>
@@ -141,11 +162,15 @@ const toggleSidebar = () => {
               v-for="item in category.items"
               :key="`${category.name}.${item.name}`"
               class="checkbox-item"
-              :class="{ selected: activeTab?.selectedDecoders?.has(`${category.name}.${item.name}`) }"
+              :class="{
+                selected: activeTab?.selectedDecoders?.has(`${category.name}.${item.name}`),
+              }"
             >
               <input
                 type="checkbox"
-                :checked="activeTab?.selectedDecoders?.has(`${category.name}.${item.name}`) || false"
+                :checked="
+                  activeTab?.selectedDecoders?.has(`${category.name}.${item.name}`) || false
+                "
                 @change="toggleDecoder(`${category.name}.${item.name}`)"
               />
               <span class="checkbox-label">{{ item.name }}</span>
@@ -174,24 +199,22 @@ const toggleSidebar = () => {
                 ×
               </button>
             </button>
-            <button
-              v-if="tabs.length < 4"
-              class="tab-add"
-              @click="addTab"
-              title="Add new tab"
-            >
+            <button v-if="tabs.length < 4" class="tab-add" @click="addTab" title="Add new tab">
               +
             </button>
           </div>
         </div>
 
         <!-- Tab Content Grid -->
-        <div class="tab-content-grid" :class="{
-          'single': tabs.length === 1,
-          'two': tabs.length === 2,
-          'three': tabs.length === 3,
-          'four': tabs.length === 4
-        }">
+        <div
+          class="tab-content-grid"
+          :class="{
+            single: tabs.length === 1,
+            two: tabs.length === 2,
+            three: tabs.length === 3,
+            four: tabs.length === 4,
+          }"
+        >
           <TabPane
             v-for="tab in tabs"
             :key="tab.id"

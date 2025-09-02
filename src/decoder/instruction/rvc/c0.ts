@@ -1,5 +1,6 @@
-import { DecodeFieldType } from '../../../types/decoder'
-import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
+import { DecodeFieldType } from '@/types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '@/types/decoder'
+
 import {
   funct3,
   rds1,

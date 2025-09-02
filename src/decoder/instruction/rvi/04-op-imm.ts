@@ -1,4 +1,5 @@
-import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '@/types/decoder'
+
 import { rd, rs1, funct3, immI, shamt6, funct6 } from './common'
 
 export const opImmFields: (DecodeField | ConditionalDecodeMode)[] = [

@@ -1,6 +1,7 @@
 import type { DecodeField } from '@/types/decoder'
-import { registerNames, fRegisterNames } from '../common'
 import { renderImm } from '@/decoder/utils/renderImm'
+
+import { registerNames, fRegisterNames } from '../common'
 
 export const rds1: DecodeField = { name: "rd'", low: 2, high: 4, value: registerNames.slice(8, 16) }
 

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import DecoderCard from './DecoderCard.vue'
-import { decoders } from '../decoder'
 import { computed } from 'vue'
-import type { Tab } from '../types/tab'
+
+import { decoders } from '@/decoder'
+import type { Tab } from '@/types/tab'
+
+import DecoderCard from './DecoderCard.vue'
 
 interface Props {
   tab: Tab
@@ -90,7 +92,7 @@ const hexInputModel = computed({
   get: () => props.tab.hexInput,
   set: (value: string) => {
     props.tab.hexInput = value
-  }
+  },
 })
 </script>
 

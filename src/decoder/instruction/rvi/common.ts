@@ -1,6 +1,9 @@
-import { DecodeFieldType } from '../../../types/decoder'
-import type { DecodeField } from '../../../types/decoder'
-import { renderImm } from '../../utils/renderImm'
+import { DecodeFieldType } from '@/types/decoder'
+
+import type { DecodeField } from '@/types/decoder'
+
+import { renderImm } from '@/decoder/utils/renderImm'
+
 import { registerNames, fRegisterNames } from '../common'
 
 export const rd: DecodeField = { name: 'rd', low: 7, high: 11, value: registerNames }

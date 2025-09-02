@@ -1,5 +1,6 @@
-import { DecodeFieldType } from '../../../types/decoder'
-import type { DecodeField, ConditionalDecodeMode } from '../../../types/decoder'
+import { DecodeFieldType } from '@/types/decoder'
+import type { DecodeField, ConditionalDecodeMode } from '@/types/decoder'
+
 import { rd, rs1, rs2, funct3, funct7 } from './common'
 
 export const op32Fields: (DecodeField | ConditionalDecodeMode)[] = [
