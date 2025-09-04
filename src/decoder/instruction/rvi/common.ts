@@ -4,7 +4,7 @@ import type { DecodeField } from '@/types/decoder'
 
 import { renderImm } from '@/decoder/utils/renderImm'
 
-import { registerNames, fRegisterNames } from '../common'
+import { registerNames, fRegisterNames, csrNames } from '../common'
 
 export const rd: DecodeField = { name: 'rd', low: 7, high: 11, value: registerNames }
 
@@ -219,5 +219,5 @@ export const csr: DecodeField = {
   name: 'csr',
   low: 20,
   high: 31,
-  value: [...Array(4096).keys()].map((x) => x.toString(16)),
+  value: csrNames,
 }
