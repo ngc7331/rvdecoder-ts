@@ -113,7 +113,9 @@ const validateFields = () => {
   effectiveFields.forEach((field, index) => {
     // Check that at least one of name or type is not undefined
     if (field.name === undefined && field.type === undefined) {
-      console.error(`Field[${index}] in ${props.config.name}: name and type cannot both be undefined`)
+      console.error(
+        `Field[${index}] in ${props.config.name}: name and type cannot both be undefined`,
+      )
     }
 
     // Validate value array length

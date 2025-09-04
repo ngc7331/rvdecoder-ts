@@ -150,11 +150,22 @@ const cancelEditTabName = () => {
 </script>
 
 <template>
-  <div class="tab-pane" :class="{ active: isActive, 'double-row': isDoubleRow }" @click="handleTabPaneClick">
+  <div
+    class="tab-pane"
+    :class="{ active: isActive, 'double-row': isDoubleRow }"
+    @click="handleTabPaneClick"
+  >
     <div class="tab-header">
       <div class="tab-title-container">
         <button class="tab-edit-btn" @click.stop="startEditTabName" :title="`Edit ${tab.name}`">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
             <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" />
           </svg>
@@ -190,6 +201,7 @@ const cancelEditTabName = () => {
     <div class="page-content">
       <DecoderCard
         v-for="config in getFilteredDecoderConfigs()"
+        :key="config.name"
         :config="config"
         :hex-value="tab.hexInput"
         @toggle-bit="handleToggleBit"
