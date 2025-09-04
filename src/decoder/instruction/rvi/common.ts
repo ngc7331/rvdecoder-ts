@@ -220,4 +220,38 @@ export const csr: DecodeField = {
   low: 20,
   high: 31,
   value: csrNames,
+  extra: (value) => {
+    const csr = value >> 20n
+    const csr11_10 = (csr >> 10n) & 0x3n
+    const csr9_8 = (csr >> 8n) & 0x3n
+    const csr7_6 = (csr >> 6n) & 0x3n
+    const csr11_4 = (csr >> 4n) & 0xffn
+
+    let type
+    if (csr11_4 === 0b01111010n) {
+      type = 'Machine-level Standard read/write Debug'
+    } else if (csr11_4 === 0b01111011n) {
+      type = 'Machine-level Debug-mode-only'
+    } else {
+      const custom = (
+        csr9_8 === 0b00n
+          ? csr11_10 === 0b10n || (csr11_10 === 0b11n && csr7_6 === 0b11n)
+          : csr11_10 !== 0b00n && csr7_6 === 0b11n
+      )
+        ? 'Custom'
+        : 'Standard'
+      const perm = csr11_10 === 0b11n ? 'read-only' : 'read/write'
+      const level =
+        csr9_8 === 0b11n
+          ? 'Machine'
+          : csr9_8 === 0b10n
+            ? 'Hypervisor'
+            : csr9_8 === 0b01n
+              ? 'Supervisor'
+              : 'User'
+      type = `${level} ${custom} ${perm}`
+    }
+
+    return [{ msg: `CSR @ 0x${csr.toString(16)} : ${type}`, level: 'info' }]
+  },
 }
