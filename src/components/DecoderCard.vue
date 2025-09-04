@@ -8,7 +8,8 @@ import {
   decodeFieldTypeDescription,
 } from '@/types/decoder'
 
-interface Props extends DecodeMode {
+interface Props {
+  config: DecodeMode
   hexValue: string
 }
 
@@ -107,12 +108,12 @@ const getEffectiveFields = (fields: (DecodeField | ConditionalDecodeMode)[]): De
 
 // Validate value array length and field name/type
 const validateFields = () => {
-  const effectiveFields = getEffectiveFields(props.fields)
+  const effectiveFields = getEffectiveFields(props.config.fields)
 
   effectiveFields.forEach((field, index) => {
     // Check that at least one of name or type is not undefined
     if (field.name === undefined && field.type === undefined) {
-      console.error(`Field[${index}] in ${props.name}: name and type cannot both be undefined`)
+      console.error(`Field[${index}] in ${props.config.name}: name and type cannot both be undefined`)
     }
 
     // Validate value array length
@@ -121,7 +122,7 @@ const validateFields = () => {
       const expectedLength = Math.pow(2, fieldWidth)
       if (field.value.length !== expectedLength) {
         console.error(
-          `Field ${field.name || field.type} in ${props.name}: value array length is ${field.value.length}, but expected ${expectedLength} (2^${fieldWidth})`,
+          `Field ${field.name || field.type} in ${props.config.name}: value array length is ${field.value.length}, but expected ${expectedLength} (2^${fieldWidth})`,
         )
       }
     }
@@ -139,7 +140,7 @@ const validateFields = () => {
 
     if (current.end >= next.start) {
       console.error(
-        `Bit range overlap in ${props.name}: ${current.name} [${current.start}:${current.end}] overlaps with ${next.name} [${next.start}:${next.end}]`,
+        `Bit range overlap in ${props.config.name}: ${current.name} [${current.start}:${current.end}] overlaps with ${next.name} [${next.start}:${next.end}]`,
       )
     }
   }
@@ -152,7 +153,7 @@ const validateFields = () => {
     if (lastEnd >= 0 && range.start > lastEnd + 1) {
       const gapStart = lastEnd + 1
       const gapEnd = range.start - 1
-      console.warn(`Bit gap in ${props.name}: bits [${gapStart}:${gapEnd}] are not covered`)
+      console.warn(`Bit gap in ${props.config.name}: bits [${gapStart}:${gapEnd}] are not covered`)
     }
     coveredBits += range.width
     lastEnd = range.end
@@ -160,11 +161,11 @@ const validateFields = () => {
 
   // Check if all 64 bits are covered
   if (lastEnd < 63) {
-    console.warn(`Bit gap in ${props.name}: bits [${lastEnd + 1}:63] are not covered`)
+    console.warn(`Bit gap in ${props.config.name}: bits [${lastEnd + 1}:63] are not covered`)
   }
 
   if (coveredBits !== 64) {
-    console.error(`Total bits in ${props.name} must be 64, but got ${coveredBits}`)
+    console.error(`Total bits in ${props.config.name} must be 64, but got ${coveredBits}`)
   }
 }
 
@@ -195,7 +196,7 @@ const toggleBit = (bitIndex: number) => {
 
 const binGroups = computed(() => {
   // Get effective fields after resolving conditions
-  const effectiveFields = getEffectiveFields(props.fields)
+  const effectiveFields = getEffectiveFields(props.config.fields)
 
   // Group based on effective fields - fields are ordered from low to high bit positions
   const groups = []
@@ -251,7 +252,7 @@ const binGroups = computed(() => {
 
 // Collect extra information from all fields with extra functions
 const extraInfo = computed(() => {
-  const effectiveFields = getEffectiveFields(props.fields)
+  const effectiveFields = getEffectiveFields(props.config.fields)
   const infoList: string[] = []
   const warningList: string[] = []
   const errorList: string[] = []
@@ -289,7 +290,7 @@ const extraInfo = computed(() => {
 
 <template>
   <div class="card">
-    <div class="card-title">{{ name }}</div>
+    <div class="card-title">{{ config.name }}</div>
     <div class="bin-output">
       <div v-for="(group, groupIdx) in binGroups" :key="groupIdx" class="bin-group">
         <span class="bin-name" :class="group.styleType" :title="group.description">

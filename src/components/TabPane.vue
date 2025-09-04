@@ -190,9 +190,7 @@ const cancelEditTabName = () => {
     <div class="page-content">
       <DecoderCard
         v-for="config in getFilteredDecoderConfigs()"
-        :key="config.key"
-        :name="config.name"
-        :fields="config.fields"
+        :config="config"
         :hex-value="tab.hexInput"
         @toggle-bit="handleToggleBit"
       />
