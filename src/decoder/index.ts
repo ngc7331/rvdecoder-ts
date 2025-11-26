@@ -3,6 +3,7 @@ import type { DecodeCategory } from '@/types/decoder'
 import { generalDecoders } from './general'
 import { instructionDecoders } from './instruction'
 import { mModeCSRDecoders, sModeCSRDecoders } from './csr'
+import { mmDecoders } from './mm'
 
 export const decoders: DecodeCategory[] = [
   {
@@ -20,5 +21,9 @@ export const decoders: DecodeCategory[] = [
   {
     name: 's-mode csr',
     items: sModeCSRDecoders,
+  },
+  {
+    name: 'mm',
+    items: mmDecoders,
   },
 ]
