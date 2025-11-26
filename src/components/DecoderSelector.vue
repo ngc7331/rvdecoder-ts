@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { decoders } from '@/decoder'
+import { ref, onMounted, toRefs } from 'vue'
 
 interface Props {
   selectedDecoders: Set<string>
@@ -11,8 +12,50 @@ interface Emits {
   (e: 'toggle-decoder', decoderKey: string): void
 }
 
-defineProps<Props>()
-defineEmits<Emits>()
+const props = defineProps<Props>()
+const { selectedDecoders, collapsed } = toRefs(props)
+const emit = defineEmits<Emits>()
+
+// track collapsed categories by name
+const collapsedCategories = ref(new Set<string>())
+
+const STORAGE_KEY = 'rvdecoder.collapsedCategories'
+
+function persistCollapsedCategories() {
+  try {
+    const arr = Array.from(collapsedCategories.value)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr))
+  } catch (e) {
+    // ignore storage errors
+  }
+}
+
+function isCategoryCollapsed(name: string) {
+  return collapsedCategories.value.has(name)
+}
+
+function toggleCategory(name: string) {
+  if (collapsedCategories.value.has(name)) {
+    collapsedCategories.value.delete(name)
+  } else {
+    collapsedCategories.value.add(name)
+  }
+  persistCollapsedCategories()
+}
+
+onMounted(() => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const arr = JSON.parse(raw)
+      if (Array.isArray(arr)) {
+        collapsedCategories.value = new Set(arr)
+      }
+    }
+  } catch (e) {
+    // ignore parse/storage errors
+  }
+})
 </script>
 
 <template>
@@ -52,22 +95,42 @@ defineEmits<Emits>()
       <div v-for="category in decoders" :key="category.name" class="category-group">
         <div class="category-header">
           <h4>{{ category.name }}</h4>
+          <button
+            class="collapse-toggle"
+            @click="toggleCategory(category.name)"
+            :title="isCategoryCollapsed(category.name) ? 'Expand category' : 'Collapse category'"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              :class="{ rotated: isCategoryCollapsed(category.name) }"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
         </div>
-        <label
-          v-for="item in category.items"
-          :key="`${category.name}.${item.name}`"
-          class="checkbox-item"
-          :class="{
-            selected: selectedDecoders?.has(`${category.name}.${item.name}`),
-          }"
-        >
-          <input
-            type="checkbox"
-            :checked="selectedDecoders?.has(`${category.name}.${item.name}`) || false"
-            @change="$emit('toggle-decoder', `${category.name}.${item.name}`)"
-          />
-          <span class="checkbox-label">{{ item.name }}</span>
-        </label>
+
+        <div v-show="!isCategoryCollapsed(category.name)" class="category-items">
+          <label
+            v-for="item in category.items"
+            :key="`${category.name}.${item.name}`"
+            class="checkbox-item"
+            :class="{
+              selected: selectedDecoders?.has(`${category.name}.${item.name}`),
+            }"
+          >
+            <input
+              type="checkbox"
+              :checked="selectedDecoders?.has(`${category.name}.${item.name}`) || false"
+              @change="$emit('toggle-decoder', `${category.name}.${item.name}`)"
+            />
+            <span class="checkbox-label">{{ item.name }}</span>
+          </label>
+        </div>
       </div>
     </div>
   </aside>
@@ -194,6 +257,35 @@ defineEmits<Emits>()
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.5px;
+}
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.collapse-toggle {
+  background: none;
+  border: none;
+  padding: 4px;
+  margin-left: 8px;
+  cursor: pointer;
+  color: #5f6368;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.collapse-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.collapse-toggle svg {
+  transition: transform 0.18s ease;
+}
+.collapse-toggle svg.rotated {
+  transform: rotate(90deg);
+}
+.category-items {
+  /* keep layout consistent with previous direct labels */
 }
 .checkbox-item {
   display: flex;
