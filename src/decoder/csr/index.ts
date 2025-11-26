@@ -1,3 +1,2 @@
-import { mMode } from './m'
-
-export const csrDecoders = mMode
+export { mMode as mModeCSRDecoders } from './m'
+export { sMode as sModeCSRDecoders } from './s'
