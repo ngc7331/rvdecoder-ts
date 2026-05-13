@@ -4,6 +4,7 @@ import { generalDecoders } from './general'
 import { instructionDecoders } from './instruction'
 import { mModeCSRDecoders, sModeCSRDecoders } from './csr'
 import { mmDecoders } from './mm'
+import { xiangshanDecoders } from './xiangshan'
 
 export const decoders: DecodeCategory[] = [
   {
@@ -25,5 +26,9 @@ export const decoders: DecodeCategory[] = [
   {
     name: 'mm',
     items: mmDecoders,
+  },
+  {
+    name: 'xiangshan',
+    items: xiangshanDecoders,
   },
 ]
