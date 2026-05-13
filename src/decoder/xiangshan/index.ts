@@ -10,5 +10,4 @@ export const xiangshanDecoders: DecodeMode[] = [
   genLruDecoder(2),
   genLruDecoder(4),
   genLruDecoder(8),
-  genLruDecoder(16),
 ]
